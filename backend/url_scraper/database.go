@@ -1,6 +1,8 @@
 package url_scraper
 
 import (
+	"backend/url_scraper/models"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -11,7 +13,7 @@ func ConnectDatabase(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&Task{})
+	err = db.AutoMigrate(&models.Task{})
 	if err != nil {
 		return nil, err
 	}

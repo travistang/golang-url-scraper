@@ -1,17 +1,17 @@
 package repositories
 
 import (
-	"backend/url_scraper"
+	"backend/url_scraper/models"
 	"strings"
 
 	"gorm.io/gorm"
 )
 
 type TaskRepository interface {
-	Create(task *url_scraper.Task) error
-	GetByID(id string) (*url_scraper.Task, error)
-	Search(search *url_scraper.TaskSearch) ([]*url_scraper.Task, error)
-	Update(task *url_scraper.Task) error
+	Create(task *models.Task) error
+	GetByID(id string) (*models.Task, error)
+	Search(search *models.TaskSearch) ([]*models.Task, error)
+	Update(task *models.Task) error
 	Delete(id string) error
 }
 
@@ -23,12 +23,12 @@ func NewMySQLTaskRepository(db *gorm.DB) TaskRepository {
 	return &MySQLTaskRepository{db: db}
 }
 
-func (r *MySQLTaskRepository) Create(task *url_scraper.Task) error {
+func (r *MySQLTaskRepository) Create(task *models.Task) error {
 	return r.db.Create(task).Error
 }
 
-func (r *MySQLTaskRepository) GetByID(id string) (*url_scraper.Task, error) {
-	var task url_scraper.Task
+func (r *MySQLTaskRepository) GetByID(id string) (*models.Task, error) {
+	var task models.Task
 	err := r.db.Where("id = ?", id).First(&task).Error
 	if err != nil {
 		return nil, err
@@ -36,10 +36,10 @@ func (r *MySQLTaskRepository) GetByID(id string) (*url_scraper.Task, error) {
 	return &task, nil
 }
 
-func (r *MySQLTaskRepository) Search(search *url_scraper.TaskSearch) ([]*url_scraper.Task, error) {
-	var tasks []*url_scraper.Task
+func (r *MySQLTaskRepository) Search(search *models.TaskSearch) ([]*models.Task, error) {
+	var tasks []*models.Task
 
-	query := r.db.Model(&url_scraper.Task{})
+	query := r.db.Model(&models.Task{})
 
 	query = r.applyFilters(query, search)
 	query = r.applySorting(query, search)
@@ -49,7 +49,7 @@ func (r *MySQLTaskRepository) Search(search *url_scraper.TaskSearch) ([]*url_scr
 	return tasks, err
 }
 
-func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *url_scraper.TaskSearch) *gorm.DB {
+func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *models.TaskSearch) *gorm.DB {
 	if search.Status != "" {
 		query = query.Where("status = ?", search.Status)
 	}
@@ -159,7 +159,7 @@ func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *url_scraper.T
 	return query
 }
 
-func (r *MySQLTaskRepository) applySorting(query *gorm.DB, search *url_scraper.TaskSearch) *gorm.DB {
+func (r *MySQLTaskRepository) applySorting(query *gorm.DB, search *models.TaskSearch) *gorm.DB {
 	sortBy := search.GetSortBy()
 	sortOrder := search.GetSortOrder()
 
@@ -181,16 +181,16 @@ func (r *MySQLTaskRepository) applySorting(query *gorm.DB, search *url_scraper.T
 	return query.Order(orderClause)
 }
 
-func (r *MySQLTaskRepository) applyPagination(query *gorm.DB, search *url_scraper.TaskSearch) *gorm.DB {
+func (r *MySQLTaskRepository) applyPagination(query *gorm.DB, search *models.TaskSearch) *gorm.DB {
 	return query.Limit(search.GetLimit()).Offset(search.GetOffset())
 }
 
-func (r *MySQLTaskRepository) Update(task *url_scraper.Task) error {
+func (r *MySQLTaskRepository) Update(task *models.Task) error {
 	return r.db.Save(task).Error
 }
 
 func (r *MySQLTaskRepository) Delete(id string) error {
-	result := r.db.Where("id = ?", id).Delete(&url_scraper.Task{})
+	result := r.db.Where("id = ?", id).Delete(&models.Task{})
 	if result.Error != nil {
 		return result.Error
 	}
