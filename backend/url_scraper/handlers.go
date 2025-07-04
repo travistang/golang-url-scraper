@@ -2,11 +2,13 @@ package url_scraper
 
 import (
 	"net/http"
+	"time"
 
 	"backend/url_scraper/models"
 	"backend/url_scraper/repositories"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,10 +23,20 @@ func NewTaskHandler(db *gorm.DB) *TaskHandler {
 }
 
 func (h *TaskHandler) CreateTask(c *gin.Context) {
-	var task models.Task
-	if err := c.ShouldBindJSON(&task); err != nil {
+	var req struct {
+		URL string `json:"url" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	task := models.Task{
+		ID:          uuid.New().String(),
+		URL:         req.URL,
+		Status:      models.StatusPending,
+		SubmittedAt: time.Now(),
 	}
 
 	if err := h.taskRepo.Create(&task); err != nil {

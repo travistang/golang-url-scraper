@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"backend/url_scraper"
+	"backend/url_scraper/crawler"
+	"backend/url_scraper/repositories"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -20,6 +22,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
+
+	taskRepo := repositories.NewMySQLTaskRepository(db)
+
+	worker := crawler.NewWorker(taskRepo)
+	go worker.Start()
 
 	router := gin.Default()
 	router.Use(cors.Default())
