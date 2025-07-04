@@ -58,6 +58,10 @@ func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *models.TaskSe
 		query = query.Where("url LIKE ?", "%"+search.URL+"%")
 	}
 
+	if search.RequestProcessingAt != nil {
+		query = query.Where("request_processing_at = ?", *search.RequestProcessingAt)
+	}
+
 	if search.SubmittedAfter != nil {
 		query = query.Where("submitted_at >= ?", search.SubmittedAfter)
 	}
@@ -168,7 +172,7 @@ func (r *MySQLTaskRepository) applySorting(query *gorm.DB, search *models.TaskSe
 		"started_at": true, "completed_at": true, "page_title": true, "html_version": true,
 		"internal_links": true, "external_links": true, "inaccessible_links": true,
 		"h1_count": true, "h2_count": true, "h3_count": true, "h4_count": true, "h5_count": true, "h6_count": true,
-		"has_login_form": true,
+		"has_login_form": true, "request_processing_at": true,
 	}
 
 	var orderClause string

@@ -14,10 +14,11 @@ const (
 )
 
 type Task struct {
-	ID          string     `json:"id" gorm:"primaryKey"`
-	URL         string     `json:"url" gorm:"type:text"`
-	Status      TaskStatus `json:"status" gorm:"type:enum('pending','running','completed','failed')"`
-	SubmittedAt time.Time  `json:"submitted_at" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
+	ID                  string     `json:"id" gorm:"primaryKey"`
+	URL                 string     `json:"url" gorm:"type:text"`
+	Status              TaskStatus `json:"status" gorm:"type:enum('pending','running','completed','failed')"`
+	SubmittedAt         time.Time  `json:"submitted_at" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
+	RequestProcessingAt *int64     `json:"request_processing_at" gorm:"default:null"`
 
 	StartedAt         *time.Time `json:"started_at,omitempty"`
 	CompletedAt       *time.Time `json:"completed_at,omitempty"`
@@ -50,6 +51,8 @@ type TaskSearch struct {
 
 	SubmittedAfter  *time.Time `json:"submitted_after"`
 	SubmittedBefore *time.Time `json:"submitted_before"`
+
+	RequestProcessingAt *int64 `json:"request_processing_at"`
 
 	GlobalSearch string `json:"global_search"`
 

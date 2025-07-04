@@ -34,7 +34,7 @@ func main() {
 	router.GET("/health", Healthcheck)
 
 	api := router.Group("/api/v1")
-	taskHandler := url_scraper.NewTaskHandler(db)
+	taskHandler := url_scraper.NewTaskHandler(db, worker)
 	taskHandler.RegisterRoutes(api)
 
 	log.Println("Starting server on :8080")

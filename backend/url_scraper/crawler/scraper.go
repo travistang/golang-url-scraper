@@ -27,7 +27,8 @@ type ScrapingResult struct {
 }
 
 type Scraper struct {
-	client *http.Client
+	client    *http.Client
+	interrupt bool
 }
 
 func NewScraper() *Scraper {
@@ -35,6 +36,7 @@ func NewScraper() *Scraper {
 		client: &http.Client{
 			Timeout: 30 * time.Second,
 		},
+		interrupt: false,
 	}
 }
 
@@ -130,6 +132,10 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 	}
 
 	doc.Find("a[href]").Each(func(i int, link *goquery.Selection) {
+		if s.IsInterrupted() {
+			return
+		}
+
 		href, exists := link.Attr("href")
 		if !exists {
 			return
@@ -149,13 +155,25 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 			result.ExternalLinks++
 		}
 
-		if s.isLinkAccessible(resolvedURL.String()) == false {
+		if !s.isLinkAccessible(resolvedURL.String()) {
 			result.InaccessibleLinks++
 		}
 	})
 }
 
+func (s *Scraper) Interrupt() {
+	s.interrupt = true
+}
+
+func (s *Scraper) IsInterrupted() bool {
+	return s.interrupt
+}
+
 func (s *Scraper) isLinkAccessible(linkURL string) bool {
+	if s.IsInterrupted() {
+		return false
+	}
+
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}

@@ -8,9 +8,10 @@ import (
 )
 
 type Worker struct {
-	repo    repositories.TaskRepository
-	scraper *Scraper
-	quit    chan bool
+	repo        repositories.TaskRepository
+	scraper     *Scraper
+	quit        chan bool
+	currentTask *models.Task
 }
 
 func NewWorker(repo repositories.TaskRepository) *Worker {
@@ -39,10 +40,19 @@ func (w *Worker) Start() {
 }
 
 func (w *Worker) Stop() {
+	w.scraper.Interrupt()
 	w.quit <- true
 }
 
+func (w *Worker) Interrupt() {
+	w.scraper.Interrupt()
+}
+
 func (w *Worker) processNextTask() {
+	if w.currentTask != nil {
+		return
+	}
+
 	task, err := w.getNextPendingTask()
 	if err != nil {
 		return
@@ -52,24 +62,26 @@ func (w *Worker) processNextTask() {
 		return
 	}
 
+	w.currentTask = task
 	log.Printf("Processing task %s for URL: %s", task.ID, task.URL)
 
-	if err := w.markTaskAsRunning(task); err != nil {
+	if err := w.markTaskAs(task, models.StatusRunning); err != nil {
 		log.Printf("Failed to mark task %s as running: %v", task.ID, err)
+		w.currentTask = nil
 		return
 	}
 
 	result, err := w.scraper.ScrapeURL(task.URL)
 	if err != nil {
 		log.Printf("Failed to scrape URL %s: %v", task.URL, err)
-		w.markTaskAsFailed(task)
-		return
+		w.markTaskAs(task, models.StatusFailed)
+	} else {
+		w.scraper.UpdateTaskWithResults(task, result)
+		w.markTaskAs(task, models.StatusCompleted)
+		log.Printf("Successfully completed task %s", task.ID)
 	}
 
-	w.scraper.UpdateTaskWithResults(task, result)
-	w.markTaskAsCompleted(task)
-
-	log.Printf("Successfully completed task %s", task.ID)
+	w.currentTask = nil
 }
 
 func (w *Worker) getNextPendingTask() (*models.Task, error) {
@@ -77,7 +89,7 @@ func (w *Worker) getNextPendingTask() (*models.Task, error) {
 		Status:    models.StatusPending,
 		Page:      1,
 		PageSize:  1,
-		SortBy:    "submitted_at",
+		SortBy:    "request_processing_at",
 		SortOrder: "asc",
 	}
 
@@ -94,26 +106,18 @@ func (w *Worker) getNextPendingTask() (*models.Task, error) {
 	return tasks[0], nil
 }
 
-func (w *Worker) markTaskAsRunning(task *models.Task) error {
+func (w *Worker) markTaskAs(task *models.Task, status models.TaskStatus) error {
 	now := time.Now()
-	task.Status = models.StatusRunning
-	task.StartedAt = &now
+	task.Status = status
 
-	return w.repo.Update(task)
-}
-
-func (w *Worker) markTaskAsCompleted(task *models.Task) error {
-	now := time.Now()
-	task.Status = models.StatusCompleted
-	task.CompletedAt = &now
-
-	return w.repo.Update(task)
-}
-
-func (w *Worker) markTaskAsFailed(task *models.Task) error {
-	now := time.Now()
-	task.Status = models.StatusFailed
-	task.CompletedAt = &now
+	switch status {
+	case models.StatusRunning:
+		task.StartedAt = &now
+	case models.StatusCompleted, models.StatusFailed:
+		task.CompletedAt = &now
+	case models.StatusPending:
+		task.StartedAt = nil
+	}
 
 	return w.repo.Update(task)
 }
