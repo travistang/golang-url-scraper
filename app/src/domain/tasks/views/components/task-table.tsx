@@ -2,6 +2,7 @@
 
 import {
     ColumnFiltersState,
+    RowSelectionState,
     SortingState,
     flexRender,
     getCoreRowModel,
@@ -23,102 +24,26 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Task, TaskStatus } from "../../types"
+import { routes } from "@/constants/route"
+import axios from "axios"
+import useSWR from "swr"
+import { Task } from "../../types"
 import { taskColumns } from "./task-columns"
 
-const mockTasks: Task[] = [
-    {
-        id: "1",
-        url: "https://example.com",
-        status: TaskStatus.Completed,
-        submittedAt: "2024-01-15T10:30:00Z",
-        requestProcessingAt: 1714857600,
-        createdAt: "2024-01-15T10:30:00Z",
-        totalResults: 11,
-        pageTitle: "Example Domain",
-        hasLoginForm: false,
-        h1Count: 1,
-        h2Count: 2,
-        internalLinks: 5,
-        externalLinks: 3,
-        inaccessibleLinks: 0,
-    },
-    {
-        id: "2",
-        url: "https://blog.example.com",
-        status: TaskStatus.Completed,
-        submittedAt: "2024-01-14T09:15:00Z",
-        requestProcessingAt: 1714857650,
-        createdAt: "2024-01-14T09:15:00Z",
-        totalResults: 26,
-        pageTitle: "Blog - Another Site",
-        hasLoginForm: true,
-        h1Count: 1,
-        h2Count: 5,
-        internalLinks: 12,
-        externalLinks: 8,
-        inaccessibleLinks: 1,
-    },
-    {
-        id: "3",
-        url: "https://pending.example.com",
-        status: TaskStatus.Pending,
-        submittedAt: "2024-01-13T14:20:00Z",
-        requestProcessingAt: null,
-        createdAt: "2024-01-13T14:20:00Z",
-        totalResults: null,
-        pageTitle: null,
-        hasLoginForm: null,
-        h1Count: null,
-        h2Count: null,
-        internalLinks: null,
-        externalLinks: null,
-        inaccessibleLinks: null,
-    },
-    {
-        id: "4",
-        url: "https://failed.example.com",
-        status: TaskStatus.Failed,
-        submittedAt: "2024-01-12T16:45:00Z",
-        requestProcessingAt: null,
-        createdAt: "2024-01-12T16:45:00Z",
-        totalResults: null,
-        pageTitle: null,
-        hasLoginForm: null,
-        h1Count: null,
-        h2Count: null,
-        internalLinks: null,
-        externalLinks: null,
-        inaccessibleLinks: null,
-    },
-    {
-        id: "5",
-        url: "https://docs.example.com",
-        status: TaskStatus.Completed,
-        submittedAt: "2024-01-11T08:30:00Z",
-        requestProcessingAt: 1714857700,
-        createdAt: "2024-01-11T08:30:00Z",
-        totalResults: 69,
-        pageTitle: "Documentation Home",
-        hasLoginForm: false,
-        h1Count: 1,
-        h2Count: 8,
-        h3Count: 15,
-        internalLinks: 42,
-        externalLinks: 12,
-        inaccessibleLinks: 2,
-    },
-]
+const fetcher = (url: string) => axios.get(url).then(res => res.data);
 
 export function TaskTable() {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+    const { data, isLoading, error } = useSWR(routes.api.tasks.index, fetcher);
 
     const table = useReactTable({
-        data: mockTasks,
+        data: data?.tasks || [],
         columns: taskColumns,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
+        onRowSelectionChange: setRowSelection,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -131,12 +56,27 @@ export function TaskTable() {
         state: {
             sorting,
             columnFilters,
+            rowSelection,
         },
-    })
+        enableRowSelection: true,
+        getRowId: (row) => row.id,
+    });
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
+
+    const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
+    const totalRowCount = table.getFilteredRowModel().rows.length;
+    const selectedTasks = table.getFilteredSelectedRowModel().rows.map(row => row.original as Task);
+
+    const handleBulkAction = (action: string) => {
+        console.log(`Performing ${action} on selected tasks:`, selectedTasks);
+        // TODO: Implement bulk actions (delete and re-run)
+    };
 
     return (
         <div className="w-full">
-            <div className="flex items-center py-4">
+            <div className="flex items-center justify-between py-4">
                 <Input
                     placeholder="Filter URLs..."
                     value={(table.getColumn("url")?.getFilterValue() as string) ?? ""}
@@ -145,6 +85,27 @@ export function TaskTable() {
                     }
                     className="max-w-sm"
                 />
+                {selectedRowCount > 0 && (
+                    <div className="flex items-center space-x-2">
+                        <div className="text-sm text-muted-foreground">
+                            {selectedRowCount} of {totalRowCount} row(s) selected
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleBulkAction('delete')}
+                        >
+                            Delete Selected
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRowSelection({})}
+                        >
+                            Clear selection
+                        </Button>
+                    </div>
+                )}
             </div>
             <div className="rounded-md border">
                 <Table>

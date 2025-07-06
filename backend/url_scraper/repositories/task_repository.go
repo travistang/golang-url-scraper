@@ -50,6 +50,7 @@ func (r *MySQLTaskRepository) Search(search *models.TaskSearch) ([]*models.Task,
 }
 
 func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *models.TaskSearch) *gorm.DB {
+
 	if search.Status != "" {
 		query = query.Where("status = ?", search.Status)
 	}
@@ -167,21 +168,37 @@ func (r *MySQLTaskRepository) applySorting(query *gorm.DB, search *models.TaskSe
 	sortBy := search.GetSortBy()
 	sortOrder := search.GetSortOrder()
 
-	allowedFields := map[string]bool{
-		"id": true, "url": true, "status": true, "submitted_at": true,
-		"started_at": true, "completed_at": true, "page_title": true, "html_version": true,
-		"internal_links": true, "external_links": true, "inaccessible_links": true,
-		"h1_count": true, "h2_count": true, "h3_count": true, "h4_count": true, "h5_count": true, "h6_count": true,
-		"has_login_form": true, "request_processing_at": true,
+	// Map JSON property names (camelCase) to database column names (snake_case)
+	columnMapping := map[string]string{
+		"id":                  "id",
+		"url":                 "url",
+		"status":              "status",
+		"submittedAt":         "submitted_at",
+		"requestProcessingAt": "request_processing_at",
+		"startedAt":           "started_at",
+		"completedAt":         "completed_at",
+		"pageTitle":           "page_title",
+		"htmlVersion":         "html_version",
+		"hasLoginForm":        "has_login_form",
+		"h1Count":             "h1_count",
+		"h2Count":             "h2_count",
+		"h3Count":             "h3_count",
+		"h4Count":             "h4_count",
+		"h5Count":             "h5_count",
+		"h6Count":             "h6_count",
+		"internalLinks":       "internal_links",
+		"externalLinks":       "external_links",
+		"inaccessibleLinks":   "inaccessible_links",
 	}
 
-	var orderClause string
-	if allowedFields[sortBy] {
-		orderClause = sortBy + " " + strings.ToUpper(sortOrder)
-	} else {
-		orderClause = "submitted_at " + strings.ToUpper(sortOrder)
+	// Get the database column name
+	dbColumnName := columnMapping[sortBy]
+	if dbColumnName == "" {
+		// If mapping not found, default to submitted_at
+		dbColumnName = "submitted_at"
 	}
 
+	orderClause := dbColumnName + " " + strings.ToUpper(sortOrder)
 	return query.Order(orderClause)
 }
 

@@ -17,23 +17,23 @@ type Task struct {
 	ID                  string     `json:"id" gorm:"primaryKey"`
 	URL                 string     `json:"url" gorm:"type:text"`
 	Status              TaskStatus `json:"status" gorm:"type:enum('pending','running','completed','failed')"`
-	SubmittedAt         time.Time  `json:"submitted_at" gorm:"type:timestamp;default:CURRENT_TIMESTAMP"`
-	RequestProcessingAt *int64     `json:"request_processing_at" gorm:"default:null"`
+	SubmittedAt         time.Time  `json:"submittedAt" gorm:"type:timestamp;default:CURRENT_TIMESTAMP()"`
+	RequestProcessingAt *int64     `json:"requestProcessingAt" gorm:"default:null"`
 
-	StartedAt         *time.Time `json:"started_at,omitempty"`
-	CompletedAt       *time.Time `json:"completed_at,omitempty"`
-	HTMLVersion       *string    `json:"html_version,omitempty" gorm:"size:50"`
-	PageTitle         *string    `json:"page_title,omitempty" gorm:"type:text"`
-	HasLoginForm      *bool      `json:"has_login_form,omitempty" gorm:"default:null"`
-	H1Count           *int       `json:"h1_count,omitempty" gorm:"default:null"`
-	H2Count           *int       `json:"h2_count,omitempty" gorm:"default:null"`
-	H3Count           *int       `json:"h3_count,omitempty" gorm:"default:null"`
-	H4Count           *int       `json:"h4_count,omitempty" gorm:"default:null"`
-	H5Count           *int       `json:"h5_count,omitempty" gorm:"default:null"`
-	H6Count           *int       `json:"h6_count,omitempty" gorm:"default:null"`
-	InternalLinks     *int       `json:"internal_links,omitempty" gorm:"default:null"`
-	ExternalLinks     *int       `json:"external_links,omitempty" gorm:"default:null"`
-	InaccessibleLinks *int       `json:"inaccessible_links,omitempty" gorm:"default:null"`
+	StartedAt         *time.Time `json:"startedAt,omitempty"`
+	CompletedAt       *time.Time `json:"completedAt,omitempty"`
+	HTMLVersion       *string    `json:"htmlVersion,omitempty" gorm:"size:50"`
+	PageTitle         *string    `json:"pageTitle,omitempty" gorm:"type:text"`
+	HasLoginForm      *bool      `json:"hasLoginForm,omitempty" gorm:"default:null"`
+	H1Count           *int       `json:"h1Count,omitempty" gorm:"default:null"`
+	H2Count           *int       `json:"h2Count,omitempty" gorm:"default:null"`
+	H3Count           *int       `json:"h3Count,omitempty" gorm:"default:null"`
+	H4Count           *int       `json:"h4Count,omitempty" gorm:"default:null"`
+	H5Count           *int       `json:"h5Count,omitempty" gorm:"default:null"`
+	H6Count           *int       `json:"h6Count,omitempty" gorm:"default:null"`
+	InternalLinks     *int       `json:"internalLinks,omitempty" gorm:"default:null"`
+	ExternalLinks     *int       `json:"externalLinks,omitempty" gorm:"default:null"`
+	InaccessibleLinks *int       `json:"inaccessibleLinks,omitempty" gorm:"default:null"`
 }
 
 func (Task) TableName() string {
@@ -41,42 +41,42 @@ func (Task) TableName() string {
 }
 
 type TaskSearch struct {
-	Page      int    `json:"page"`
-	PageSize  int    `json:"page_size"`
-	SortBy    string `json:"sort_by"`
-	SortOrder string `json:"sort_order"`
+	Page      int    `form:"page"`
+	PageSize  int    `form:"pageSize"`
+	SortBy    string `form:"sortBy"`
+	SortOrder string `form:"sortOrder"`
 
-	Status TaskStatus `json:"status"`
-	URL    string     `json:"url"`
+	Status TaskStatus `form:"status"`
+	URL    string     `form:"url"`
 
-	SubmittedAfter  *time.Time `json:"submitted_after"`
-	SubmittedBefore *time.Time `json:"submitted_before"`
+	SubmittedAfter  *time.Time `form:"submittedAfter"`
+	SubmittedBefore *time.Time `form:"submittedBefore"`
 
-	RequestProcessingAt *int64 `json:"request_processing_at"`
+	RequestProcessingAt *int64 `form:"requestProcessingAt"`
 
-	GlobalSearch string `json:"global_search"`
+	GlobalSearch string `form:"globalSearch"`
 
-	HasResult *bool `json:"has_result"`
+	HasResult *bool `form:"hasResult"`
 
-	PageTitle        string `json:"page_title"`
-	HTMLVersion      string `json:"html_version"`
-	HasLoginForm     *bool  `json:"has_login_form"`
-	MinInternalLinks *int   `json:"min_internal_links"`
-	MaxInternalLinks *int   `json:"max_internal_links"`
-	MinExternalLinks *int   `json:"min_external_links"`
-	MaxExternalLinks *int   `json:"max_external_links"`
-	MinH1Count       *int   `json:"min_h1_count"`
-	MaxH1Count       *int   `json:"max_h1_count"`
-	MinH2Count       *int   `json:"min_h2_count"`
-	MaxH2Count       *int   `json:"max_h2_count"`
-	MinH3Count       *int   `json:"min_h3_count"`
-	MaxH3Count       *int   `json:"max_h3_count"`
-	MinH4Count       *int   `json:"min_h4_count"`
-	MaxH4Count       *int   `json:"max_h4_count"`
-	MinH5Count       *int   `json:"min_h5_count"`
-	MaxH5Count       *int   `json:"max_h5_count"`
-	MinH6Count       *int   `json:"min_h6_count"`
-	MaxH6Count       *int   `json:"max_h6_count"`
+	PageTitle        string `form:"pageTitle"`
+	HTMLVersion      string `form:"htmlVersion"`
+	HasLoginForm     *bool  `form:"hasLoginForm"`
+	MinInternalLinks *int   `form:"minInternalLinks"`
+	MaxInternalLinks *int   `form:"maxInternalLinks"`
+	MinExternalLinks *int   `form:"minExternalLinks"`
+	MaxExternalLinks *int   `form:"maxExternalLinks"`
+	MinH1Count       *int   `form:"minH1Count"`
+	MaxH1Count       *int   `form:"maxH1Count"`
+	MinH2Count       *int   `form:"minH2Count"`
+	MaxH2Count       *int   `form:"maxH2Count"`
+	MinH3Count       *int   `form:"minH3Count"`
+	MaxH3Count       *int   `form:"maxH3Count"`
+	MinH4Count       *int   `form:"minH4Count"`
+	MaxH4Count       *int   `form:"maxH4Count"`
+	MinH5Count       *int   `form:"minH5Count"`
+	MaxH5Count       *int   `form:"maxH5Count"`
+	MinH6Count       *int   `form:"minH6Count"`
+	MaxH6Count       *int   `form:"maxH6Count"`
 }
 
 func (ts *TaskSearch) GetLimit() int {
@@ -98,7 +98,7 @@ func (ts *TaskSearch) GetOffset() int {
 
 func (ts *TaskSearch) GetSortBy() string {
 	if ts.SortBy == "" {
-		return "submitted_at"
+		return "submittedAt"
 	}
 	return ts.SortBy
 }

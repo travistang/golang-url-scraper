@@ -89,7 +89,7 @@ func (w *Worker) getNextPendingTask() (*models.Task, error) {
 		Status:    models.StatusPending,
 		Page:      1,
 		PageSize:  1,
-		SortBy:    "request_processing_at",
+		SortBy:    "requestProcessingAt",
 		SortOrder: "asc",
 	}
 
