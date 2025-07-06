@@ -1,3 +1,5 @@
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -23,11 +25,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main className="flex justify-end h-[100dvh] w-[100dvw] flex flex-col items-stretch">
+            <nav className="flex justify-end py-4 px-2 md:px-4 z-10 h-16 shrink-0">
+              <ThemeToggle />
+            </nav>
+            <div className="flex-1">
+              {children}
+
+            </div>
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );
