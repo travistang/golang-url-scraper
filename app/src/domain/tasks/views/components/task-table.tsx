@@ -44,13 +44,7 @@ export function TaskTable() {
         manualPagination: true,
         pageCount: searchParams.totalPages || 0,
         state: {
-            sorting: searchParams.sorting,
-            columnFilters: searchParams.filters,
             rowSelection,
-            pagination: {
-                pageIndex: searchParams.pageIndex,
-                pageSize: searchParams.pageSize,
-            },
         },
         enableRowSelection: true,
         getRowId: (row) => row.id,

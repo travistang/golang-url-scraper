@@ -1,7 +1,7 @@
 "use client"
 
 import { Checkbox } from "@/components/ui/checkbox"
-import { Column, ColumnDef } from "@tanstack/react-table"
+import { ColumnDef } from "@tanstack/react-table"
 import { formatDistanceToNow } from "date-fns"
 import { Task, TaskSearchParams } from "../../../types"
 import { TaskStatusBadge } from "../task-status-badge"
@@ -15,14 +15,14 @@ type Props = {
         params: (prev: TaskSearchParams) => TaskSearchParams
     ) => void;
 }
-export const createTaskColumns = ({ setSearchParams }: Props): ColumnDef<Task>[] => {
-    const toggleSorting = (column: Column<Task>) => {
+export const createTaskColumns = ({ searchParams, setSearchParams }: Props): ColumnDef<Task>[] => {
+    const toggleSorting = (id: string) => {
         setSearchParams(prev => {
-            const sorting = prev.sorting.find(s => s.id === column.id)
+            const sorting = prev.sorting.find(s => s.id === id)
             if (sorting) {
-                return { ...prev, sorting: [{ id: column.id, desc: !sorting.desc }] }
+                return { ...prev, sorting: [{ id, desc: !sorting.desc }] }
             }
-            return { ...prev, sorting: [{ id: column.id, desc: true }] }
+            return { ...prev, sorting: [{ id, desc: true }] }
         })
 
     }
@@ -66,8 +66,8 @@ export const createTaskColumns = ({ setSearchParams }: Props): ColumnDef<Task>[]
                 return (
                     <SortFilterButton
                         column={column}
-                        sortOrder={column.getIsSorted() as "asc" | "desc" | undefined}
-                        onToggleSorting={() => toggleSorting(column)}
+                        sortOrder={searchParams.sorting.find(s => s.id === column.id)?.desc}
+                        onToggleSorting={() => toggleSorting(column.id)}
                         label="URL"
                         onFilter={() => { }}
                     >
@@ -89,8 +89,8 @@ export const createTaskColumns = ({ setSearchParams }: Props): ColumnDef<Task>[]
                 return (
                     <SortFilterButton
                         column={column}
-                        sortOrder={column.getIsSorted() as "asc" | "desc" | undefined}
-                        onToggleSorting={() => toggleSorting(column)}
+                        sortOrder={searchParams.sorting.find(s => s.id === column.id)?.desc}
+                        onToggleSorting={() => toggleSorting(column.id)}
                         onFilter={() => { }}
                         label="Page Title"
                     >
@@ -109,8 +109,8 @@ export const createTaskColumns = ({ setSearchParams }: Props): ColumnDef<Task>[]
                 return (
                     <SortFilterButton
                         column={column}
-                        sortOrder={column.getIsSorted() as "asc" | "desc" | undefined}
-                        onToggleSorting={() => toggleSorting(column)}
+                        sortOrder={searchParams.sorting.find(s => s.id === column.id)?.desc}
+                        onToggleSorting={() => toggleSorting(column.id)}
                         onFilter={() => { }}
                         label="Submitted At"
                     >

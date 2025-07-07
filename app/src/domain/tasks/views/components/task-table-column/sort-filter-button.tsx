@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, FilterIcon } from "lucide-react";
 
 export type SortFilterButtonProps = {
     column: Column<Task>;
-    sortOrder: "asc" | "desc" | undefined;
+    sortOrder: boolean | undefined;
     onToggleSorting?: () => void;
     children?: React.ReactNode;
     label?: React.ReactNode;
@@ -14,9 +14,9 @@ export type SortFilterButtonProps = {
 }
 
 const sortIcon = (sortOrder: SortFilterButtonProps["sortOrder"]) => {
-    if (sortOrder === "asc") return ArrowUp
-    if (sortOrder === "desc") return ArrowDown
-    return ArrowUpDown
+    if (sortOrder === undefined) return ArrowUpDown;
+    if (sortOrder) return ArrowDown;
+    return ArrowUp;
 }
 
 export const SortFilterButton = ({
