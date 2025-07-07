@@ -16,9 +16,25 @@ const fetchTasks = async (url: string): Promise<TaskListFetchResult> => {
     return response.data;
 }
 
+const defaultSearchParams: TaskSearchParams = {
+    pageIndex: 0,
+    pageSize: 10,
+    totalPages: 1,
+    sorting: [],
+    filters: [],
+}
+
+const createSearchParams = (searchParams: TaskSearchParams) => {
+    const params = new URLSearchParams();
+    params.append('page', searchParams.pageIndex.toString());
+    params.append('pageSize', searchParams.pageSize.toString());
+    params.append('sortBy', searchParams.sorting[0]?.id || '');
+    params.append('sortOrder', searchParams.sorting[0]?.desc ? 'desc' : 'asc');
+    return params.toString();
+}
 export const useTaskList = () => {
-    const [searchParams, setSearchParams] = useState<TaskSearchParams>({});
-    const { data: fetchResult, isLoading, error } = useSWR(() => `${routes.api.tasks.index}?${new URLSearchParams(searchParams as Record<string, string>).toString()}`, fetchTasks);
+    const [searchParams, setSearchParams] = useState<TaskSearchParams>(defaultSearchParams);
+    const { data: fetchResult, isLoading, error } = useSWR(`${routes.api.tasks.index}?${createSearchParams(searchParams)}`, fetchTasks);
 
     return {
         searchParams,

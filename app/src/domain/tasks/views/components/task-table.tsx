@@ -1,69 +1,60 @@
 "use client"
 
 import {
-    ColumnFiltersState,
     RowSelectionState,
-    SortingState,
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    useReactTable,
+    useReactTable
 } from "@tanstack/react-table"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import * as React from "react"
 
+import { Pagination } from "@/components/pagination"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableHeader,
-    TableRow,
+    TableRow
 } from "@/components/ui/table"
-import { routes } from "@/constants/route"
-import axios from "axios"
-import useSWR from "swr"
+import { useTaskList } from "../../hooks/use-task-list"
 import { Task } from "../../types"
-import { taskColumns } from "./task-columns"
+import { createTaskColumns } from "./task-table-column/task-columns"
+import { TaskTableRows } from "./task-table-rows"
 
-const fetcher = (url: string) => axios.get(url).then(res => res.data);
 
 export function TaskTable() {
-    const [sorting, setSorting] = React.useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
-    const { data, isLoading, error } = useSWR(routes.api.tasks.index, fetcher);
+    const { tasks = [], isLoading, searchParams, setSearchParams } = useTaskList();
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
     const table = useReactTable({
-        data: data?.tasks || [],
-        columns: taskColumns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
+        data: tasks || [],
+        columns: createTaskColumns({ searchParams, setSearchParams }),
         onRowSelectionChange: setRowSelection,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        initialState: {
-            pagination: {
-                pageSize: 10,
-            },
-        },
+        manualSorting: true,
+        manualFiltering: true,
+        manualPagination: true,
+        pageCount: searchParams.totalPages || 0,
         state: {
-            sorting,
-            columnFilters,
+            sorting: searchParams.sorting,
+            columnFilters: searchParams.filters,
             rowSelection,
+            pagination: {
+                pageIndex: searchParams.pageIndex,
+                pageSize: searchParams.pageSize,
+            },
         },
         enableRowSelection: true,
         getRowId: (row) => row.id,
     });
-
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
 
     const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
     const totalRowCount = table.getFilteredRowModel().rows.length;
@@ -76,14 +67,14 @@ export function TaskTable() {
 
     return (
         <div className="w-full">
-            <div className="flex items-center justify-between py-4">
+            <div className="flex flex-col lg:flex-row justify-between py-4 gap-2">
                 <Input
                     placeholder="Filter URLs..."
                     value={(table.getColumn("url")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
                         table.getColumn("url")?.setFilterValue(event.target.value)
                     }
-                    className="max-w-sm"
+                    className="w-full lg:max-w-sm"
                 />
                 {selectedRowCount > 0 && (
                     <div className="flex items-center space-x-2">
@@ -128,57 +119,19 @@ export function TaskTable() {
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={taskColumns.length}
-                                    className="h-24 text-center"
-                                >
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        <TaskTableRows
+                            isLoading={isLoading}
+                            rows={table.getRowModel().rows}
+                        />
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-center space-x-4 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="text-sm font-medium">
-                    Page {table.getState().pagination.pageIndex + 1} of{" "}
-                    {table.getPageCount()}
-                </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
+            <Pagination
+                page={searchParams.pageIndex}
+                totalPages={searchParams.totalPages || 0}
+                onPrevious={() => setSearchParams(prev => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
+                onNext={() => setSearchParams(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
+            />
         </div>
     )
 }
