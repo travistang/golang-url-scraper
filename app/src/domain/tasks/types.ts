@@ -1,4 +1,4 @@
-import { ColumnFiltersState, PaginationState, SortingState } from "@tanstack/react-table";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 
 export enum TaskStatus {
     Pending = "pending",
@@ -36,5 +36,6 @@ export type Task = {
 export interface TaskSearchParams extends PaginationState {
     totalPages: number;
     sorting: SortingState;
-    filters: ColumnFiltersState;
+    search?: string;
+    status?: TaskStatus;
 }

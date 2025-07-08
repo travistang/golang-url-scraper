@@ -12,8 +12,6 @@ import {
 import * as React from "react"
 
 import { Pagination } from "@/components/pagination"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
     Table,
     TableBody,
@@ -23,6 +21,8 @@ import {
 } from "@/components/ui/table"
 import { useBulkTaskAction } from "../../hooks/use-bulk-task-action"
 import { useTaskList } from "../../hooks/use-task-list"
+import { BulkActionButtonGroup } from "./bulk-action-button-group"
+import { SearchBar } from "./search-bar"
 import { createTaskColumns } from "./task-table-column/task-columns"
 import { TaskTableRows } from "./task-table-rows"
 
@@ -67,35 +67,15 @@ export function TaskTable() {
     return (
         <div className="w-full">
             <div className="flex flex-col lg:flex-row justify-between py-4 gap-2">
-                <Input
-                    placeholder="Filter URLs..."
-                    value={(table.getColumn("url")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn("url")?.setFilterValue(event.target.value)
-                    }
-                    className="w-full lg:max-w-sm"
+                <SearchBar
+                    onSearch={(search) => setSearchParams(prev => ({ ...prev, search }))}
                 />
-                {selectedRowCount > 0 && (
-                    <div className="flex items-center space-x-2">
-                        <div className="text-sm text-muted-foreground">
-                            {selectedRowCount} of {totalRowCount} row(s) selected
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={bulkDelete}
-                        >
-                            Delete Selected
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setRowSelection({})}
-                        >
-                            Clear selection
-                        </Button>
-                    </div>
-                )}
+                <BulkActionButtonGroup
+                    selectedRowCount={selectedRowCount}
+                    totalRowCount={totalRowCount}
+                    bulkDelete={bulkDelete}
+                    clearSelection={() => setRowSelection({})}
+                />
             </div>
             <div className="rounded-md border">
                 <Table>

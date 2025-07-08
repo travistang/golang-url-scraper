@@ -21,7 +21,6 @@ const defaultSearchParams: TaskSearchParams = {
     pageSize: 10,
     totalPages: 1,
     sorting: [],
-    filters: [],
 }
 
 const createSearchParams = (searchParams: TaskSearchParams) => {
@@ -30,6 +29,12 @@ const createSearchParams = (searchParams: TaskSearchParams) => {
     params.append('pageSize', searchParams.pageSize.toString());
     params.append('sortBy', searchParams.sorting[0]?.id || '');
     params.append('sortOrder', searchParams.sorting[0]?.desc ? 'desc' : 'asc');
+    if (searchParams.search) {
+        params.append('globalSearch', searchParams.search);
+    }
+    if (searchParams.status) {
+        params.append('status', searchParams.status);
+    }
     return params.toString();
 }
 export const useTaskList = () => {
