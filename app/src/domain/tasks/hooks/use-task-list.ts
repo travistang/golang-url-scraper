@@ -1,4 +1,4 @@
-import { routes } from "@/constants/route";
+import { routes } from "@/constants/routes";
 import axios from "axios";
 import { useState } from "react";
 import useSWR from "swr";
@@ -34,11 +34,12 @@ const createSearchParams = (searchParams: TaskSearchParams) => {
 }
 export const useTaskList = () => {
     const [searchParams, setSearchParams] = useState<TaskSearchParams>(defaultSearchParams);
-    const { data: fetchResult, isLoading, error } = useSWR(`${routes.api.tasks.index}?${createSearchParams(searchParams)}`, fetchTasks);
+    const { data: fetchResult, isLoading, error, mutate: refetch } = useSWR(`${routes.api.tasks.index}?${createSearchParams(searchParams)}`, fetchTasks);
 
     return {
         searchParams,
         setSearchParams,
+        refetch,
         ...fetchResult,
         isLoading,
         error,

@@ -1,4 +1,4 @@
-import { routes } from "@/constants/route";
+import { routes } from "@/constants/routes";
 import { redirect } from "next/navigation";
 
 export default async function Home() {

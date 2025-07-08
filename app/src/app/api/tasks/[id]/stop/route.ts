@@ -1,7 +1,6 @@
+import { getServerRoutes } from "@/constants/server-routes";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 export async function POST(
     request: NextRequest,
@@ -9,8 +8,8 @@ export async function POST(
 ) {
     try {
         const { id } = params;
-
-        const response = await axios.post(`${BACKEND_URL}/api/v1/tasks/${id}/stop`);
+        const serverRoutes = await getServerRoutes();
+        const response = await axios.post(serverRoutes.api.tasks.stop(id));
         return NextResponse.json(response.data);
     } catch (error) {
         console.error("Error stopping task:", error);

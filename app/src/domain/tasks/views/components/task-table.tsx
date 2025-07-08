@@ -21,15 +21,26 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table"
+import { useBulkTaskAction } from "../../hooks/use-bulk-task-action"
 import { useTaskList } from "../../hooks/use-task-list"
-import { Task } from "../../types"
 import { createTaskColumns } from "./task-table-column/task-columns"
 import { TaskTableRows } from "./task-table-rows"
 
 
 export function TaskTable() {
-    const { tasks = [], isLoading, searchParams, setSearchParams } = useTaskList();
+    const {
+        tasks = [],
+        isLoading,
+        searchParams,
+        setSearchParams,
+        refetch
+    } = useTaskList();
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
+    const { bulkDelete } = useBulkTaskAction(Object.keys(rowSelection), () => {
+        setRowSelection({});
+        refetch();
+    });
 
     const table = useReactTable({
         data: tasks || [],
@@ -50,14 +61,8 @@ export function TaskTable() {
         getRowId: (row) => row.id,
     });
 
-    const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
+    const selectedRowCount = Object.keys(rowSelection).length;
     const totalRowCount = table.getFilteredRowModel().rows.length;
-    const selectedTasks = table.getFilteredSelectedRowModel().rows.map(row => row.original as Task);
-
-    const handleBulkAction = (action: string) => {
-        console.log(`Performing ${action} on selected tasks:`, selectedTasks);
-        // TODO: Implement bulk actions (delete and re-run)
-    };
 
     return (
         <div className="w-full">
@@ -78,7 +83,7 @@ export function TaskTable() {
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleBulkAction('delete')}
+                            onClick={bulkDelete}
                         >
                             Delete Selected
                         </Button>

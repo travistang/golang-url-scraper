@@ -1,7 +1,7 @@
+import { getServerRoutes } from "@/constants/server-routes";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 export async function GET(
     request: NextRequest,
@@ -9,8 +9,8 @@ export async function GET(
 ) {
     try {
         const { id } = params;
-
-        const response = await axios.get(`${BACKEND_URL}/api/v1/tasks/${id}`);
+        const serverRoutes = await getServerRoutes();
+        const response = await axios.get(serverRoutes.api.tasks.details(id));
         return NextResponse.json(response.data);
     } catch (error) {
         console.error("Error fetching task:", error);
@@ -35,8 +35,8 @@ export async function DELETE(
 ) {
     try {
         const { id } = params;
-
-        const response = await axios.delete(`${BACKEND_URL}/api/v1/tasks/${id}`);
+        const serverRoutes = await getServerRoutes();
+        const response = await axios.delete(serverRoutes.api.tasks.details(id));
         return NextResponse.json(response.data);
     } catch (error) {
         console.error("Error deleting task:", error);

@@ -13,6 +13,7 @@ type TaskRepository interface {
 	Search(search *models.TaskSearch) ([]*models.Task, error)
 	Update(task *models.Task) error
 	Delete(id string) error
+	BulkDelete(ids []string) error
 }
 
 type MySQLTaskRepository struct {
@@ -217,6 +218,14 @@ func (r *MySQLTaskRepository) Delete(id string) error {
 	}
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *MySQLTaskRepository) BulkDelete(ids []string) error {
+	result := r.db.Where("id IN (?)", ids).Delete(&models.Task{})
+	if result.Error != nil {
+		return result.Error
 	}
 	return nil
 }

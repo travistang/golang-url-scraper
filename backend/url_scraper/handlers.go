@@ -115,7 +115,30 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
+	c.Status(http.StatusNoContent)
+}
+
+func (h *TaskHandler) BulkDeleteTasks(c *gin.Context) {
+	var req struct {
+		IDs []string `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDs are required"})
+		return
+	}
+
+	if err := h.taskRepo.BulkDelete(req.IDs); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to bulk delete tasks"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 /**
@@ -229,6 +252,8 @@ func (h *TaskHandler) RegisterRoutes(api *gin.RouterGroup) {
 	{
 		tasks.POST("", h.CreateTask)
 		tasks.GET("", h.SearchTasks)
+		tasks.DELETE("", h.BulkDeleteTasks)
+
 		tasks.GET("/:id", h.GetTask)
 		tasks.DELETE("/:id", h.DeleteTask)
 		tasks.POST("/:id/start", h.StartTask)
