@@ -20,21 +20,27 @@ import {
     TableRow
 } from "@/components/ui/table"
 import { useBulkTaskAction } from "../../hooks/use-bulk-task-action"
-import { useTaskList } from "../../hooks/use-task-list"
+import { Task, TaskSearchParams } from "../../types"
 import { BulkActionButtonGroup } from "./bulk-action-button-group"
 import { SearchBar } from "./search-bar"
 import { createTaskColumns } from "./task-table-column/task-columns"
 import { TaskTableRows } from "./task-table-rows"
 
+type Props = {
+    tasks: Task[];
+    isLoading: boolean;
+    searchParams: TaskSearchParams;
+    setSearchParams: (updater: (prev: TaskSearchParams) => TaskSearchParams) => void;
+    refetch: () => void;
+}
 
-export function TaskTable() {
-    const {
-        tasks = [],
-        isLoading,
-        searchParams,
-        setSearchParams,
-        refetch
-    } = useTaskList();
+export function TaskTable({
+    tasks,
+    isLoading,
+    searchParams,
+    setSearchParams,
+    refetch
+}: Props) {
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
     const { bulkDelete } = useBulkTaskAction(Object.keys(rowSelection), () => {

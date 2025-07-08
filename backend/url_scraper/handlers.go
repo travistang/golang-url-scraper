@@ -2,6 +2,7 @@ package url_scraper
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"backend/url_scraper/models"
@@ -35,6 +36,11 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if _, err := url.ParseRequestURI(req.URL); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL"})
 		return
 	}
 
