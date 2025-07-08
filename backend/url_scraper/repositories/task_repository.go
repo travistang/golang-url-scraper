@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+/*
+*
+* Contains database operations for tasks
+ */
 type TaskRepository interface {
 	Create(task *models.Task) error
 	GetByID(id string) (*models.Task, error)
@@ -14,6 +18,7 @@ type TaskRepository interface {
 	Update(task *models.Task) error
 	Delete(id string) error
 	BulkDelete(ids []string) error
+	BulkUpdate(tasks []*models.Task) error
 }
 
 type MySQLTaskRepository struct {
@@ -51,6 +56,10 @@ func (r *MySQLTaskRepository) Search(search *models.TaskSearch) ([]*models.Task,
 }
 
 func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *models.TaskSearch) *gorm.DB {
+
+	if len(search.IDs) > 0 {
+		query = query.Where("id IN (?)", search.IDs)
+	}
 
 	if search.Status != "" {
 		query = query.Where("status = ?", search.Status)
@@ -228,4 +237,15 @@ func (r *MySQLTaskRepository) BulkDelete(ids []string) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *MySQLTaskRepository) BulkUpdate(tasks []*models.Task) error {
+	tx := r.db.Begin()
+	for _, task := range tasks {
+		if err := tx.Save(task).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
 }

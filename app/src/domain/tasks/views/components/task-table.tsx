@@ -43,7 +43,7 @@ export function TaskTable({
 }: Props) {
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
-    const { bulkDelete } = useBulkTaskAction(Object.keys(rowSelection), () => {
+    const { bulkDelete, bulkRerun } = useBulkTaskAction(Object.keys(rowSelection), () => {
         setRowSelection({});
         refetch();
     });
@@ -71,6 +71,7 @@ export function TaskTable({
     const totalRowCount = table.getFilteredRowModel().rows.length;
 
     return (
+
         <div className="w-full">
             <div className="flex flex-col lg:flex-row justify-between py-4 gap-2">
                 <SearchBar
@@ -80,6 +81,7 @@ export function TaskTable({
                     selectedRowCount={selectedRowCount}
                     totalRowCount={totalRowCount}
                     bulkDelete={bulkDelete}
+                    bulkRerun={bulkRerun}
                     clearSelection={() => setRowSelection({})}
                 />
             </div>

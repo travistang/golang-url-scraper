@@ -5,27 +5,30 @@ import (
 	"net/url"
 	"time"
 
+	"backend/url_scraper/crawler"
 	"backend/url_scraper/models"
 	"backend/url_scraper/repositories"
+	"backend/url_scraper/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-type WorkerController interface {
-	Interrupt()
-}
-
+/*
+*
+Contains HTTP handlers for tasks
+*/
 type TaskHandler struct {
-	taskRepo repositories.TaskRepository
-	worker   WorkerController
+	taskService services.TaskService
 }
 
-func NewTaskHandler(db *gorm.DB, worker WorkerController) *TaskHandler {
+func NewTaskHandler(db *gorm.DB, worker *crawler.Worker) *TaskHandler {
 	return &TaskHandler{
-		taskRepo: repositories.NewMySQLTaskRepository(db),
-		worker:   worker,
+		taskService: services.NewTaskService(
+			repositories.NewMySQLTaskRepository(db),
+			worker,
+		),
 	}
 }
 
@@ -55,7 +58,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		RequestProcessingAt: &submissionTime,
 	}
 
-	if err := h.taskRepo.Create(&task); err != nil {
+	if err := h.taskService.Create(&task); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create task"})
 		return
 	}
@@ -70,7 +73,7 @@ func (h *TaskHandler) GetTask(c *gin.Context) {
 		return
 	}
 
-	task, err := h.taskRepo.GetByID(id)
+	task, err := h.taskService.GetByID(id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -91,7 +94,7 @@ func (h *TaskHandler) SearchTasks(c *gin.Context) {
 		return
 	}
 
-	tasks, err := h.taskRepo.Search(&search)
+	tasks, err := h.taskService.Search(&search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search tasks"})
 		return
@@ -112,7 +115,7 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	if err := h.taskRepo.Delete(id); err != nil {
+	if err := h.taskService.Delete(id); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 			return
@@ -139,7 +142,7 @@ func (h *TaskHandler) BulkDeleteTasks(c *gin.Context) {
 		return
 	}
 
-	if err := h.taskRepo.BulkDelete(req.IDs); err != nil {
+	if err := h.taskService.BulkDelete(req.IDs); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to bulk delete tasks"})
 		return
 	}
@@ -151,7 +154,7 @@ func (h *TaskHandler) BulkDeleteTasks(c *gin.Context) {
 * @api {post} /tasks/:id/start Start a task.
 * @apiName StartTask
 * @apiGroup Tasks
-* @apiDescription Start a task regardless of its status. If the task is running, then this does nothing. Otherwise the current running task is interrupted and the worker will work on this task instead.
+* @apiDescription Start a task regardless of its status. If the task is running, then this does nothing. Otherwise the current running task is interrupted and the scraper will work on this task instead.
 * @apiParam {string} id The ID of the task to start
 * @apiSuccess {string} message The message indicating the task has been started
  */
@@ -162,59 +165,19 @@ func (h *TaskHandler) StartTask(c *gin.Context) {
 		return
 	}
 
-	/**
-	Prioritize the requested task by setting request_processing_at to 0.
-	*/
-	task, err := h.taskRepo.GetByID(id)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve task"})
+	if err := h.taskService.Start(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start requested task"})
 		return
 	}
 
-	now := time.Now().Unix()
-	zero := int64(0)
-
-	task.RequestProcessingAt = &zero
-	if err := h.taskRepo.Update(task); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to prioritize task"})
-		return
-	}
-
-	/**
-	Reset any prioritized tasks with request_processing_at = 0 to now.
-	*/
-	search := &models.TaskSearch{
-		RequestProcessingAt: &zero,
-		Page:                1,
-		PageSize:            1000,
-	}
-	tasks, err := h.taskRepo.Search(search)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search tasks"})
-		return
-	}
-
-	for _, t := range tasks {
-		if t.RequestProcessingAt != nil && *t.RequestProcessingAt == 0 {
-			t.RequestProcessingAt = &now
-			h.taskRepo.Update(t)
-		}
-	}
-
-	h.worker.Interrupt()
-
-	c.JSON(http.StatusOK, gin.H{"message": "Task prioritized for immediate processing"})
+	c.JSON(http.StatusOK, gin.H{"message": "Task started"})
 }
 
 /**
 * @api {post} /tasks/:id/stop Stop a task.
 * @apiName StopTask
 * @apiGroup Tasks
-* @apiDescription Stop a task regardless of its status. If the task is not running or pending, then this does nothing. Otherwise the task is marked as pending and the worker will stop working on it. It will also be put at the end of the queue by setting request_processing_at to the current timestamp.
+* @apiDescription Stop a task regardless of its status. If the task is not running or pending, then this does nothing. Otherwise the task is marked as pending and the scraper will stop working on it. It will also be put at the end of the queue by setting request_processing_at to the current timestamp.
 * @apiParam {string} id The ID of the task to stop
 * @apiSuccess {string} message The message indicating the task has been stopped
  */
@@ -225,32 +188,35 @@ func (h *TaskHandler) StopTask(c *gin.Context) {
 		return
 	}
 
-	task, err := h.taskRepo.GetByID(id)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve task"})
+	if err := h.taskService.Stop(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to stop current task"})
 		return
 	}
 
-	if task.Status != models.StatusRunning && task.Status != models.StatusPending {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Task is not running or pending"})
+	if err := h.taskService.Start(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start requested task"})
 		return
 	}
 
-	now := time.Now().Unix()
-	task.RequestProcessingAt = &now
+	c.JSON(http.StatusOK, gin.H{"message": "Task stopped"})
+}
 
-	if err := h.taskRepo.Update(task); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to deprioritize task"})
+func (h *TaskHandler) BulkReRunTasks(c *gin.Context) {
+	var req struct {
+		IDs []string `json:"ids" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	h.worker.Interrupt()
+	if err := h.taskService.BulkReRunTasks(req.IDs); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to bulk re-run tasks"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Task deprioritized"})
+	c.Status(http.StatusNoContent)
 }
 
 func (h *TaskHandler) RegisterRoutes(api *gin.RouterGroup) {
@@ -259,6 +225,7 @@ func (h *TaskHandler) RegisterRoutes(api *gin.RouterGroup) {
 		tasks.POST("", h.CreateTask)
 		tasks.GET("", h.SearchTasks)
 		tasks.DELETE("", h.BulkDeleteTasks)
+		tasks.POST("/rerun", h.BulkReRunTasks)
 
 		tasks.GET("/:id", h.GetTask)
 		tasks.DELETE("/:id", h.DeleteTask)

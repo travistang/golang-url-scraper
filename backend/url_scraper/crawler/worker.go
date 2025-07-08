@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+/*
+*
+* Worker for crawling tasks.  Also deals with start / stop logic and repository updates
+ */
 type Worker struct {
 	repo        repositories.TaskRepository
 	scraper     *Scraper

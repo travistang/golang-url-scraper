@@ -26,6 +26,10 @@ type ScrapingResult struct {
 	InaccessibleLinks int
 }
 
+/*
+*
+* Scraper for fetching information from URL
+ */
 type Scraper struct {
 	client    *http.Client
 	interrupt bool

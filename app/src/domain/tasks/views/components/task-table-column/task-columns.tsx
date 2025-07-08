@@ -6,8 +6,9 @@ import { formatDistanceToNow } from "date-fns"
 import { Task, TaskSearchParams } from "../../../types"
 import { TaskStatusBadge } from "../task-status-badge"
 import { SortFilterButton } from "./sort-filter-button"
+import { TaskActionButton } from "./task-action-button"
 
-export const COLUMNS_COUNT = 5;
+export const COLUMNS_COUNT = 6;
 
 type Props = {
     searchParams: TaskSearchParams;
@@ -124,6 +125,17 @@ export const createTaskColumns = ({ searchParams, setSearchParams }: Props): Col
                         {formatDistanceToNow(date, { addSuffix: true })}
                     </div>
                 )
+            },
+        },
+        {
+            accessorKey: "actions",
+            header: "",
+            cell: ({ row }) => {
+                return (
+                    <TaskActionButton
+                        task={row.original}
+                    />
+                );
             },
         },
 

@@ -4,9 +4,10 @@ type Props = {
     selectedRowCount: number;
     totalRowCount: number;
     bulkDelete: () => void;
+    bulkRerun: () => void;
     clearSelection: () => void;
 }
-export const BulkActionButtonGroup = ({ selectedRowCount, totalRowCount, bulkDelete, clearSelection }: Props) => {
+export const BulkActionButtonGroup = ({ selectedRowCount, totalRowCount, bulkDelete, bulkRerun, clearSelection }: Props) => {
     if (selectedRowCount === 0) return null;
     return (
         <div className="flex items-center space-x-2">
@@ -19,6 +20,13 @@ export const BulkActionButtonGroup = ({ selectedRowCount, totalRowCount, bulkDel
                 onClick={bulkDelete}
             >
                 Delete Selected
+            </Button>
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={bulkRerun}
+            >
+                Re-run Selected
             </Button>
             <Button
                 variant="outline"

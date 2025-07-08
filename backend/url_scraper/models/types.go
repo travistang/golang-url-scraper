@@ -40,11 +40,30 @@ func (Task) TableName() string {
 	return "tasks"
 }
 
+func (t *Task) ResetResult() {
+	t.HTMLVersion = nil
+	t.PageTitle = nil
+	t.HasLoginForm = nil
+	t.H1Count = nil
+	t.H2Count = nil
+	t.H3Count = nil
+	t.H4Count = nil
+	t.H5Count = nil
+	t.H6Count = nil
+	t.InternalLinks = nil
+	t.ExternalLinks = nil
+	t.InaccessibleLinks = nil
+	t.StartedAt = nil
+	t.CompletedAt = nil
+	t.Status = StatusPending
+}
+
 type TaskSearch struct {
-	Page      int    `form:"page"`
-	PageSize  int    `form:"pageSize"`
-	SortBy    string `form:"sortBy"`
-	SortOrder string `form:"sortOrder"`
+	IDs       []string `form:"ids"`
+	Page      int      `form:"page"`
+	PageSize  int      `form:"pageSize"`
+	SortBy    string   `form:"sortBy"`
+	SortOrder string   `form:"sortOrder"`
 
 	Status TaskStatus `form:"status"`
 	URL    string     `form:"url"`

@@ -46,7 +46,7 @@ export const useTaskList = () => {
         mutate: refetch
     } = useSWR(
         `${routes.api.tasks.index}?${createSearchParams(searchParams)}`, fetchTasks, {
-        refreshInterval: 5000,
+        refreshInterval: 1000,
     });
 
     return {
