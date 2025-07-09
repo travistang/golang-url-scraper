@@ -7,7 +7,7 @@ type Props = {
     onPrevious: () => void;
     onNext: () => void;
 }
-export const Pagination = ({ page, totalPages, onPrevious, onNext }: Props) => {
+export const Pagination = ({ page, totalPages = 0, onPrevious, onNext }: Props) => {
     return (
         <div className="flex items-center justify-center space-x-4 py-4">
             <Button

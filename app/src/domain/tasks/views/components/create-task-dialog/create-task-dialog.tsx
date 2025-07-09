@@ -7,6 +7,7 @@ import { routes } from "@/constants/routes";
 import axios from "axios";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import useSWRMutation from "swr/mutation";
 
 const createTask = async (url: string, { arg }: { arg: { url: string } }) => {
@@ -29,6 +30,9 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
             onSuccess: () => {
                 setOpen(false);
                 onCreate();
+            },
+            onError: (error) => {
+                toast.error("Failed to create task. Check if the URL starts with http or https");
             }
         }
     );

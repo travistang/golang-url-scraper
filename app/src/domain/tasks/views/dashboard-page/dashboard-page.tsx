@@ -6,7 +6,7 @@ import { TaskTable } from "@/domain/tasks/views/components/task-table";
 export default function DashboardPage({ initialData }: { initialData?: TaskListFetchResult }) {
     const {
         tasks = [],
-        total,
+        total = 0,
         isLoading,
         searchParams,
         setSearchParams,
@@ -20,7 +20,7 @@ export default function DashboardPage({ initialData }: { initialData?: TaskListF
             </div>
             <TaskTable
                 tasks={tasks}
-                total={total || 0}
+                total={total}
                 isLoading={isLoading}
                 searchParams={searchParams} setSearchParams={setSearchParams}
                 refetch={refetch}
