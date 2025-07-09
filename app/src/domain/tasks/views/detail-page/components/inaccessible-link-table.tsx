@@ -18,30 +18,12 @@ const columns = [
     {
         header: "Status Code",
         accessorKey: "statusCode",
-        cell: ({ row }: { row: Row<typeof data[number]> }) => {
+        cell: ({ row }: { row: Row<{ url: string; statusCode: number }> }) => {
             return <span>{row.original.statusCode || '--'}</span>
         }
     },
 ];
 
-const data = [
-    {
-        url: "https://www.google.com",
-        statusCode: 404,
-    },
-    {
-        url: "https://www.google.com/not-found",
-        statusCode: 404,
-    },
-    {
-        url: "https://www.google.com/forbidden",
-        statusCode: 403,
-    },
-    {
-        url: "https://www.google.com/cannot-connect",
-        statusCode: 0,
-    },
-]
 export const InaccessibleLinkTable = ({ inaccessibleLinks, className }: Props) => {
     const table = useReactTable({
         data: inaccessibleLinks,

@@ -9,9 +9,6 @@ type Props = {
     externalLinks: number;
 }
 
-const chartData = [
-    { links: "links", internal: 0, external: 12 },
-]
 const chartConfig = {
     internal: {
         label: "Internal",
@@ -41,7 +38,13 @@ export const LinksChart = ({ className, internalLinks, externalLinks }: Props) =
                             tickMargin={10}
                             axisLine={false}
                         />
-                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartTooltip content={(
+                            <ChartTooltipContent
+                                payload={[]}
+                                coordinate={{ x: 0, y: 0 }}
+                                active
+                                accessibilityLayer />
+                        )} />
                         <ChartLegend content={<ChartLegendContent payload={[]} />} />
                         <Bar dataKey="internal" fill="var(--color-internal)" radius={4} />
                         <Bar dataKey="external" fill="var(--color-external)" radius={4} />

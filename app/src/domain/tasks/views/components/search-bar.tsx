@@ -11,7 +11,7 @@ export const SearchBar = ({ onSearch }: Props) => {
 
     useEffect(() => {
         onSearch(debouncedSearch);
-    }, [debouncedSearch]);
+    }, [debouncedSearch, onSearch]);
 
     return (
         <Input

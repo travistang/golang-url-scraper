@@ -31,7 +31,7 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
                 setOpen(false);
                 onCreate();
             },
-            onError: (error) => {
+            onError: () => {
                 toast.error("Failed to create task. Check if the URL is valid");
             }
         }

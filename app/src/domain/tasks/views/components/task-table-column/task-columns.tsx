@@ -70,7 +70,7 @@ export const createTaskColumns = ({ searchParams, setSearchParams }: Props): Col
                     </SortFilterButton>
                 )
             },
-            cell: ({ row, column }) => {
+            cell: ({ row }) => {
                 return <TaskStatusBadge status={row.getValue("status") as TaskStatus} />
             },
         },

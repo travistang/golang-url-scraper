@@ -5,9 +5,8 @@ import { TaskListFetchResult } from "@/domain/tasks/hooks/use-task-list";
 import DashboardPage from "@/domain/tasks/views/dashboard-page/dashboard-page";
 import axios from "axios";
 import { redirect } from "next/navigation";
-import { NextRequest } from "next/server";
 
-export default async function TasksPage(request: NextRequest) {
+export default async function TasksPage() {
     try {
         const token = await retrieveToken();
         if (!token) {

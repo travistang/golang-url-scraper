@@ -2,25 +2,31 @@ version: "3.8"
 
 services:
   app:
+    build: ./app
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
+
+  backend:
     build: ./backend
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL=mysql://root:password@db:3306/url_scraper?parseTime=true
+      - DATABASE_URL=user:password@tcp(db:3306)/url_scraper?parseTime=true
     depends_on:
       - db
-    restart: unless-stopped
-
+    restart: always
   db:
-    image: mysql:8.0
+    image: mysql:9
+    ports:
+      - "13306:3306"
     environment:
+      MYSQL_PASSWORD: password
+      MYSQL_USER: user
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: url_scraper
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    restart: unless-stopped
-
-volumes:
-  mysql_data:
+    restart: always
