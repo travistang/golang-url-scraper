@@ -1,15 +1,21 @@
 import { getServerRoutes } from "@/constants/server-routes";
+import { retrieveToken } from "@/domain/auth/helpers/retrieve-token";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
     try {
+        const token = await retrieveToken();
         const { searchParams } = new URL(request.url);
         const queryString = searchParams.toString();
         const serverRoutes = await getServerRoutes();
         const backendUrl = `${serverRoutes.api.tasks.index}?${queryString}`;
 
-        const response = await axios.get(backendUrl);
+        const response = await axios.get(backendUrl, {
+            headers: {
+                Authorization: token,
+            },
+        });
         return NextResponse.json(response.data);
     } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -30,10 +36,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        const token = await retrieveToken();
         const body = await request.json();
 
         const serverRoutes = await getServerRoutes();
-        const response = await axios.post(serverRoutes.api.tasks.index, body);
+        const response = await axios.post(serverRoutes.api.tasks.index, body, {
+            headers: {
+                Authorization: token,
+            },
+        });
         return NextResponse.json(response.data, { status: 201 });
     } catch (error) {
         console.error("Error creating task:", error);
@@ -54,10 +65,16 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
+        const token = await retrieveToken();
         const body = await request.json();
 
         const serverRoutes = await getServerRoutes();
-        const response = await axios.delete(serverRoutes.api.tasks.index, { data: body });
+        const response = await axios.delete(serverRoutes.api.tasks.index, {
+            data: body,
+            headers: {
+                Authorization: token,
+            },
+        });
         return NextResponse.json(response.data, { status: 200 });
     } catch (error) {
         console.error("Error deleting tasks:", error);

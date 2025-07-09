@@ -8,7 +8,7 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
@@ -19,18 +19,13 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if req.Email == HARDCODED_USER && req.Password == HARDCODED_PASSWORD {
-		c.SetCookie(
-			"Authorization",
-			"Basic "+base64.StdEncoding.EncodeToString([]byte(req.Email+":"+req.Password)),
-			0, "/", "", true, true,
-		)
+	if req.Username == HARDCODED_USER && req.Password == HARDCODED_PASSWORD {
+		token := "Basic " + base64.StdEncoding.EncodeToString([]byte(req.Username+":"+req.Password))
+		c.Header("Authorization", token)
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Login successful",
-			"user": gin.H{
-				"email": req.Email,
-			},
+			"token":   token,
 		})
 		return
 	}

@@ -1,5 +1,6 @@
 export const routes = {
     api: {
+        login: "/api/login",
         tasks: {
             index: "/api/tasks",
             rerun: "/api/tasks/rerun",

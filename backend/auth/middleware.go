@@ -17,7 +17,7 @@ func SimpleAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Basic Auth: "Basic base64(email:password)"
+		// Basic Auth: "Basic base64(username:password)"
 		if !strings.HasPrefix(authHeader, "Basic ") {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Basic auth required"})
 			c.Abort()
@@ -39,8 +39,8 @@ func SimpleAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		email, password := credentials[0], credentials[1]
-		if email != HARDCODED_USER || password != HARDCODED_PASSWORD {
+		username, password := credentials[0], credentials[1]
+		if username != HARDCODED_USER || password != HARDCODED_PASSWORD {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 			c.Abort()
 			return

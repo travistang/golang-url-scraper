@@ -1,30 +1,27 @@
-"use client";
-import { useTaskList } from "@/domain/tasks/hooks/use-task-list";
-import { CreateTaskDialog } from "@/domain/tasks/views/components/create-task-dialog/create-task-dialog";
-import { TaskTable } from "@/domain/tasks/views/components/task-table";
+import { routes } from "@/constants/routes";
+import { getServerRoutes } from "@/constants/server-routes";
+import { retrieveToken } from "@/domain/auth/helpers/retrieve-token";
+import { TaskListFetchResult } from "@/domain/tasks/hooks/use-task-list";
+import DashboardPage from "@/domain/tasks/views/dashboard-page/dashboard-page";
+import axios from "axios";
+import { redirect } from "next/navigation";
+import { NextRequest } from "next/server";
 
-export default function TasksPage() {
-    const {
-        tasks = [],
-        total,
-        isLoading,
-        searchParams,
-        setSearchParams,
-        refetch
-    } = useTaskList();
-    return (
-        <div className="container mx-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold mb-6">Tasks</h1>
-                <CreateTaskDialog onCreate={refetch} />
-            </div>
-            <TaskTable
-                tasks={tasks}
-                total={total || 0}
-                isLoading={isLoading}
-                searchParams={searchParams} setSearchParams={setSearchParams}
-                refetch={refetch}
-            />
-        </div>
-    )
+export default async function TasksPage(request: NextRequest) {
+    try {
+        const token = await retrieveToken();
+        if (!token) {
+            redirect(routes.pages.login);
+        }
+        const serverRoutes = await getServerRoutes();
+        const { data } = await axios.get<TaskListFetchResult>(serverRoutes.api.tasks.index, {
+            headers: {
+                Authorization: token,
+            }
+        });
+        return <DashboardPage initialData={data} />
+    } catch (error) {
+        console.error(error);
+        redirect(routes.pages.login);
+    }
 } 

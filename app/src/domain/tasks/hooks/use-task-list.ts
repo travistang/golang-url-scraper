@@ -36,7 +36,8 @@ const createSearchParams = (searchParams: TaskSearchParams) => {
     }
     return params.toString();
 }
-export const useTaskList = () => {
+
+export const useTaskList = (initialData?: TaskListFetchResult) => {
     const [searchParams, setSearchParams] = useState<TaskSearchParams>(defaultSearchParams);
     const {
         data: fetchResult,
@@ -46,6 +47,7 @@ export const useTaskList = () => {
     } = useSWR(
         `${routes.api.tasks.index}?${createSearchParams(searchParams)}`, fetchTasks, {
         refreshInterval: 1000,
+        fallbackData: initialData,
     });
 
     return {

@@ -33,7 +33,7 @@ func main() {
 	router.Use(cors.Default())
 
 	router.GET("/health", Healthcheck)
-	router.POST("/login", auth.Login)
+	router.POST("/api/login", auth.Login)
 
 	api := router.Group("/api/v1")
 	api.Use(auth.SimpleAuthMiddleware())
