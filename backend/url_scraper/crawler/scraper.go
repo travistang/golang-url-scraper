@@ -24,7 +24,7 @@ type ScrapingResult struct {
 	H6Count           int
 	InternalLinks     int
 	ExternalLinks     int
-	InaccessibleLinks int
+	InaccessibleLinks []models.InaccessibleLink
 }
 
 /*
@@ -130,6 +130,13 @@ func (s *Scraper) hasLoginForm(doc *goquery.Document) bool {
 	return hasPasswordField && hasLoginKeywords
 }
 
+func addInaccessibleLink(result *ScrapingResult, href string, statusCode int) {
+	result.InaccessibleLinks = append(result.InaccessibleLinks, models.InaccessibleLink{
+		URL:        href,
+		StatusCode: statusCode,
+	})
+}
+
 func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *ScrapingResult) {
 	parsedBase, err := url.Parse(baseURL)
 	if err != nil {
@@ -148,7 +155,7 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 
 		parsedHref, err := url.Parse(href)
 		if err != nil {
-			result.InaccessibleLinks++
+			addInaccessibleLink(result, href, 0)
 			return
 		}
 
@@ -164,7 +171,7 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 
 		if accessible, statusCode := s.linkAccessibility(resolvedURL.String()); !accessible {
 			fmt.Println("Inaccessible link:", resolvedURL.String(), "Status code:", statusCode)
-			result.InaccessibleLinks++
+			addInaccessibleLink(result, resolvedURL.String(), statusCode)
 		}
 	})
 }
@@ -216,5 +223,5 @@ func (s *Scraper) UpdateTaskWithResults(task *models.Task, result *ScrapingResul
 	task.H6Count = &result.H6Count
 	task.InternalLinks = &result.InternalLinks
 	task.ExternalLinks = &result.ExternalLinks
-	task.InaccessibleLinks = &result.InaccessibleLinks
+	task.InaccessibleLinks = result.InaccessibleLinks
 }

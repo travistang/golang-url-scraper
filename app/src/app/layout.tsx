@@ -39,9 +39,8 @@ export default function RootLayout({
             <nav className="flex justify-end py-4 px-2 md:px-4 z-10 h-16 shrink-0">
               <ThemeToggle />
             </nav>
-            <div className="flex-1">
+            <div className="flex-1 overflow-y-scroll pb-16">
               {children}
-
             </div>
           </main>
         </ThemeProvider>

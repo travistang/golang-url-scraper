@@ -13,6 +13,11 @@ const (
 	StatusFailed    TaskStatus = "failed"
 )
 
+type InaccessibleLink struct {
+	URL        string `json:"url" gorm:"type:text"`
+	StatusCode int    `json:"statusCode" gorm:"type:int;default:0"`
+}
+
 type Task struct {
 	ID                  string     `json:"id" gorm:"primaryKey"`
 	URL                 string     `json:"url" gorm:"type:text"`
@@ -20,20 +25,20 @@ type Task struct {
 	SubmittedAt         time.Time  `json:"submittedAt" gorm:"type:timestamp;default:CURRENT_TIMESTAMP()"`
 	RequestProcessingAt *int64     `json:"requestProcessingAt" gorm:"default:null"`
 
-	StartedAt         *time.Time `json:"startedAt,omitempty"`
-	CompletedAt       *time.Time `json:"completedAt,omitempty"`
-	HTMLVersion       *string    `json:"htmlVersion,omitempty" gorm:"size:50"`
-	PageTitle         *string    `json:"pageTitle,omitempty" gorm:"type:text"`
-	HasLoginForm      *bool      `json:"hasLoginForm,omitempty" gorm:"default:null"`
-	H1Count           *int       `json:"h1Count,omitempty" gorm:"default:null"`
-	H2Count           *int       `json:"h2Count,omitempty" gorm:"default:null"`
-	H3Count           *int       `json:"h3Count,omitempty" gorm:"default:null"`
-	H4Count           *int       `json:"h4Count,omitempty" gorm:"default:null"`
-	H5Count           *int       `json:"h5Count,omitempty" gorm:"default:null"`
-	H6Count           *int       `json:"h6Count,omitempty" gorm:"default:null"`
-	InternalLinks     *int       `json:"internalLinks,omitempty" gorm:"default:null"`
-	ExternalLinks     *int       `json:"externalLinks,omitempty" gorm:"default:null"`
-	InaccessibleLinks *int       `json:"inaccessibleLinks,omitempty" gorm:"default:null"`
+	StartedAt         *time.Time         `json:"startedAt,omitempty"`
+	CompletedAt       *time.Time         `json:"completedAt,omitempty"`
+	HTMLVersion       *string            `json:"htmlVersion,omitempty" gorm:"size:50"`
+	PageTitle         *string            `json:"pageTitle,omitempty" gorm:"type:text"`
+	HasLoginForm      *bool              `json:"hasLoginForm,omitempty" gorm:"default:null"`
+	H1Count           *int               `json:"h1Count,omitempty" gorm:"default:null"`
+	H2Count           *int               `json:"h2Count,omitempty" gorm:"default:null"`
+	H3Count           *int               `json:"h3Count,omitempty" gorm:"default:null"`
+	H4Count           *int               `json:"h4Count,omitempty" gorm:"default:null"`
+	H5Count           *int               `json:"h5Count,omitempty" gorm:"default:null"`
+	H6Count           *int               `json:"h6Count,omitempty" gorm:"default:null"`
+	InternalLinks     *int               `json:"internalLinks,omitempty" gorm:"default:null"`
+	ExternalLinks     *int               `json:"externalLinks,omitempty" gorm:"default:null"`
+	InaccessibleLinks []InaccessibleLink `json:"inaccessibleLinks,omitempty" gorm:"type:json;serializer:json"`
 }
 
 func (Task) TableName() string {

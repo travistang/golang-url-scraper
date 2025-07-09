@@ -29,7 +29,10 @@ export type Task = {
     h6Count?: number | null;
     internalLinks?: number | null;
     externalLinks?: number | null;
-    inaccessibleLinks?: number | null;
+    inaccessibleLinks?: {
+        url: string;
+        statusCode: number;
+    }[];
 }
 
 
