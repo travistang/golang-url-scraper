@@ -32,7 +32,7 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
                 onCreate();
             },
             onError: (error) => {
-                toast.error("Failed to create task. Check if the URL starts with http or https");
+                toast.error("Failed to create task. Check if the URL is valid");
             }
         }
     );
@@ -56,7 +56,6 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
                     Add a new task to the list.
                 </DialogDescription>
                 <form onSubmit={handleCreate} className="flex flex-col items-end gap-2">
-
                     <Input
                         placeholder="URL to scrape"
                         value={url}
@@ -65,7 +64,6 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
                     <Button
                         type="submit"
                         disabled={isMutating}
-                        onClick={() => createTaskTrigger({ url })}
                     >
                         {isMutating ? "Creating Task..." : "Create"}
                     </Button>

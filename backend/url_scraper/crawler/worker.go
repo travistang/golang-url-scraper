@@ -61,7 +61,7 @@ func (w *Worker) Resume() {
 func (w *Worker) processNextTask() {
 	fmt.Println("Processing next task")
 	if w.currentTask != nil {
-		fmt.Println("Current task is not nil")
+		fmt.Println("There are already tasks being processed")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (w *Worker) processNextTask() {
 	}
 
 	if task == nil {
-		fmt.Println("No pending task found")
+		fmt.Println("No suitable next task found")
 		return
 	}
 
