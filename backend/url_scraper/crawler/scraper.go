@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"backend/url_scraper/models"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -153,13 +154,16 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 
 		resolvedURL := parsedBase.ResolveReference(parsedHref)
 
+		fmt.Println("Resolved Host:", resolvedURL.Host)
+		fmt.Println("Parsed Base Host:", parsedBase.Host)
 		if resolvedURL.Host == parsedBase.Host {
 			result.InternalLinks++
 		} else if resolvedURL.Host != "" {
 			result.ExternalLinks++
 		}
 
-		if !s.isLinkAccessible(resolvedURL.String()) {
+		if accessible, statusCode := s.linkAccessibility(resolvedURL.String()); !accessible {
+			fmt.Println("Inaccessible link:", resolvedURL.String(), "Status code:", statusCode)
 			result.InaccessibleLinks++
 		}
 	})
@@ -169,13 +173,17 @@ func (s *Scraper) Interrupt() {
 	s.interrupt = true
 }
 
+func (s *Scraper) Resume() {
+	s.interrupt = false
+}
+
 func (s *Scraper) IsInterrupted() bool {
 	return s.interrupt
 }
 
-func (s *Scraper) isLinkAccessible(linkURL string) bool {
+func (s *Scraper) linkAccessibility(linkURL string) (bool, int) {
 	if s.IsInterrupted() {
-		return false
+		return false, 0
 	}
 
 	client := &http.Client{
@@ -184,11 +192,16 @@ func (s *Scraper) isLinkAccessible(linkURL string) bool {
 
 	resp, err := client.Head(linkURL)
 	if err != nil {
-		return false
+		fmt.Println("Error getting link accessibility", err)
+		statusCode := 0
+		if resp != nil {
+			statusCode = resp.StatusCode
+		}
+		return false, statusCode
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode >= 200 && resp.StatusCode < 400
+	return resp.StatusCode >= 200 && resp.StatusCode < 400, resp.StatusCode
 }
 
 func (s *Scraper) UpdateTaskWithResults(task *models.Task, result *ScrapingResult) {

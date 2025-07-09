@@ -32,6 +32,7 @@ export const createTaskColumns = ({ searchParams, setSearchParams }: Props): Col
             id: "select",
             header: ({ table }) => (
                 <Checkbox
+                    onClick={(e) => e.stopPropagation()}
                     checked={
                         table.getIsAllPageRowsSelected() ||
                         (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -42,6 +43,7 @@ export const createTaskColumns = ({ searchParams, setSearchParams }: Props): Col
             ),
             cell: ({ row }) => (
                 <Checkbox
+                    onClick={(e) => e.stopPropagation()}
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
                     aria-label="Select row"

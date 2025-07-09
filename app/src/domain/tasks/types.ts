@@ -34,7 +34,6 @@ export type Task = {
 
 
 export interface TaskSearchParams extends PaginationState {
-    totalPages: number;
     sorting: SortingState;
     search?: string;
     status?: TaskStatus;

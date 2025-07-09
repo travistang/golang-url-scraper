@@ -94,18 +94,13 @@ func (h *TaskHandler) SearchTasks(c *gin.Context) {
 		return
 	}
 
-	tasks, err := h.taskService.Search(&search)
+	searchResult, err := h.taskService.Search(&search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search tasks"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"tasks":     tasks,
-		"page":      search.Page,
-		"page_size": search.GetLimit(),
-		"total":     len(tasks),
-	})
+	c.JSON(http.StatusOK, searchResult)
 }
 
 func (h *TaskHandler) DeleteTask(c *gin.Context) {

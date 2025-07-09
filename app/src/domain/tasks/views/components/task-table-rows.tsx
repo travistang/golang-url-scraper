@@ -2,6 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { flexRender, Row } from "@tanstack/react-table";
 
+import { routes } from "@/constants/routes";
+import { useRouter } from "next/navigation";
 import { Task } from "../../types";
 import { COLUMNS_COUNT } from "./task-table-column/task-columns";
 
@@ -20,6 +22,7 @@ type Props = {
 }
 
 export const TaskTableRows = ({ isLoading, rows }: Props) => {
+    const router = useRouter();
     if (isLoading) {
         return (
             <>
@@ -42,6 +45,8 @@ export const TaskTableRows = ({ isLoading, rows }: Props) => {
     return (
         rows.map((row) => (
             <TableRow
+                onClick={() => router.push(routes.pages.taskDetails(row.id))}
+                className="cursor-pointer"
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
             >

@@ -18,8 +18,7 @@ const fetchTasks = async (url: string): Promise<TaskListFetchResult> => {
 
 const defaultSearchParams: TaskSearchParams = {
     pageIndex: 0,
-    pageSize: 10,
-    totalPages: 1,
+    pageSize: 5,
     sorting: [],
 }
 

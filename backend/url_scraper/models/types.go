@@ -112,7 +112,7 @@ func (ts *TaskSearch) GetOffset() int {
 	if ts.Page <= 0 {
 		return 0
 	}
-	return (ts.Page - 1) * ts.GetLimit()
+	return ts.Page * ts.GetLimit()
 }
 
 func (ts *TaskSearch) GetSortBy() string {

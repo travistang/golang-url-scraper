@@ -2,10 +2,18 @@ package repositories
 
 import (
 	"backend/url_scraper/models"
+	"math"
 	"strings"
 
 	"gorm.io/gorm"
 )
+
+type TaskSearchResult struct {
+	Tasks []*models.Task `json:"tasks"`
+	Total int            `json:"total"`
+	Page  int            `json:"page"`
+	Limit int            `json:"limit"`
+}
 
 /*
 *
@@ -14,7 +22,7 @@ import (
 type TaskRepository interface {
 	Create(task *models.Task) error
 	GetByID(id string) (*models.Task, error)
-	Search(search *models.TaskSearch) ([]*models.Task, error)
+	Search(search *models.TaskSearch) (*TaskSearchResult, error)
 	Update(task *models.Task) error
 	Delete(id string) error
 	BulkDelete(ids []string) error
@@ -42,17 +50,27 @@ func (r *MySQLTaskRepository) GetByID(id string) (*models.Task, error) {
 	return &task, nil
 }
 
-func (r *MySQLTaskRepository) Search(search *models.TaskSearch) ([]*models.Task, error) {
+func (r *MySQLTaskRepository) Search(search *models.TaskSearch) (*TaskSearchResult, error) {
 	var tasks []*models.Task
 
-	query := r.db.Model(&models.Task{})
+	countQuery := r.db.Model(&models.Task{})
+	var count int64
+	countQuery = r.applyFilters(countQuery, search)
+	countQuery.Count(&count)
+	total := int(math.Ceil(float64(count) / float64(search.PageSize)))
 
+	query := r.db.Model(&models.Task{})
 	query = r.applyFilters(query, search)
 	query = r.applySorting(query, search)
 	query = r.applyPagination(query, search)
 
 	err := query.Find(&tasks).Error
-	return tasks, err
+	return &TaskSearchResult{
+		Tasks: tasks,
+		Total: total,
+		Page:  search.Page,
+		Limit: search.PageSize,
+	}, err
 }
 
 func (r *MySQLTaskRepository) applyFilters(query *gorm.DB, search *models.TaskSearch) *gorm.DB {

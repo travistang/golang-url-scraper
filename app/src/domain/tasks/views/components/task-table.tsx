@@ -28,6 +28,7 @@ import { TaskTableRows } from "./task-table-rows"
 
 type Props = {
     tasks: Task[];
+    total: number;
     isLoading: boolean;
     searchParams: TaskSearchParams;
     setSearchParams: (updater: (prev: TaskSearchParams) => TaskSearchParams) => void;
@@ -36,6 +37,7 @@ type Props = {
 
 export function TaskTable({
     tasks,
+    total,
     isLoading,
     searchParams,
     setSearchParams,
@@ -59,7 +61,7 @@ export function TaskTable({
         manualSorting: true,
         manualFiltering: true,
         manualPagination: true,
-        pageCount: searchParams.totalPages || 0,
+        pageCount: total,
         state: {
             rowSelection,
         },
@@ -115,7 +117,7 @@ export function TaskTable({
             </div>
             <Pagination
                 page={searchParams.pageIndex}
-                totalPages={searchParams.totalPages || 0}
+                totalPages={total}
                 onPrevious={() => setSearchParams(prev => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
                 onNext={() => setSearchParams(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
             />

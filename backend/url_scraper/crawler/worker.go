@@ -3,6 +3,7 @@ package crawler
 import (
 	"backend/url_scraper/models"
 	"backend/url_scraper/repositories"
+	"fmt"
 	"log"
 	"time"
 )
@@ -49,20 +50,29 @@ func (w *Worker) Stop() {
 }
 
 func (w *Worker) Interrupt() {
+	w.currentTask = nil
 	w.scraper.Interrupt()
 }
 
+func (w *Worker) Resume() {
+	w.scraper.Resume()
+}
+
 func (w *Worker) processNextTask() {
+	fmt.Println("Processing next task")
 	if w.currentTask != nil {
+		fmt.Println("Current task is not nil")
 		return
 	}
 
 	task, err := w.getNextPendingTask()
 	if err != nil {
+		fmt.Println("Error getting next pending task")
 		return
 	}
 
 	if task == nil {
+		fmt.Println("No pending task found")
 		return
 	}
 
@@ -91,23 +101,24 @@ func (w *Worker) processNextTask() {
 func (w *Worker) getNextPendingTask() (*models.Task, error) {
 	search := &models.TaskSearch{
 		Status:    models.StatusPending,
-		Page:      1,
+		Page:      0,
 		PageSize:  1,
 		SortBy:    "requestProcessingAt",
 		SortOrder: "asc",
 	}
 
-	tasks, err := w.repo.Search(search)
+	searchResult, err := w.repo.Search(search)
+	fmt.Println("get next pending task", searchResult)
 	if err != nil {
 		log.Printf("Failed to search for pending tasks: %v", err)
 		return nil, err
 	}
 
-	if len(tasks) == 0 {
+	if len(searchResult.Tasks) == 0 {
 		return nil, nil
 	}
 
-	return tasks[0], nil
+	return searchResult.Tasks[0], nil
 }
 
 func (w *Worker) markTaskAs(task *models.Task, status models.TaskStatus) error {

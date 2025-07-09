@@ -26,7 +26,10 @@ export const TaskActionButton = ({ task }: Props) => {
     return (
         <div className="text-right">
             <Tooltip>
-                <TooltipTrigger asChild disabled={isMutating} onClick={() => startStopTask({ id })}>
+                <TooltipTrigger asChild disabled={isMutating} onClick={(e) => {
+                    e.stopPropagation();
+                    startStopTask({ id })
+                }}>
                     {isRunning ? (
                         <PauseIcon className="w-4 h-4" />
                     ) : (
