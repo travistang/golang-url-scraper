@@ -15,6 +15,7 @@ export const SearchBar = ({ onSearch }: Props) => {
 
     return (
         <Input
+            placeholder="Search for tasks"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
         />

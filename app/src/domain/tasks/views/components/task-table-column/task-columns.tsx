@@ -3,9 +3,10 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { ColumnDef } from "@tanstack/react-table"
 import { formatDistanceToNow } from "date-fns"
-import { Task, TaskSearchParams } from "../../../types"
+import { Task, TaskSearchParams, TaskStatus } from "../../../types"
 import { TaskStatusBadge } from "../task-status-badge"
 import { SortFilterButton } from "./sort-filter-button"
+import { StatusFilterPopup } from "./status-filter-popup"
 import { TaskActionButton } from "./task-action-button"
 
 export const COLUMNS_COUNT = 6;
@@ -55,12 +56,22 @@ export const createTaskColumns = ({ searchParams, setSearchParams }: Props): Col
 
         {
             accessorKey: "status",
-            header: "Status",
-            cell: ({ row }) => {
-                const status = row.getValue("status") as Task["status"]
+            header: ({ column }) => {
                 return (
-                    <TaskStatusBadge status={status} />
+                    <SortFilterButton
+                        label="Status"
+                        column={column}
+                        onFilter={(value) => { setSearchParams(prev => ({ ...prev, status: value as TaskStatus })) }}
+                    >
+                        <StatusFilterPopup
+                            searchParams={searchParams}
+                            setSearchParams={setSearchParams}
+                        />
+                    </SortFilterButton>
                 )
+            },
+            cell: ({ row, column }) => {
+                return <TaskStatusBadge status={row.getValue("status") as TaskStatus} />
             },
         },
         {

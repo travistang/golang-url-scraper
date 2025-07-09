@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, FilterIcon } from "lucide-react";
 
 export type SortFilterButtonProps = {
     column: Column<Task>;
-    sortOrder: boolean | undefined;
+    sortOrder?: boolean;
     onToggleSorting?: () => void;
     children?: React.ReactNode;
     label?: React.ReactNode;
@@ -29,25 +29,28 @@ export const SortFilterButton = ({
 }: SortFilterButtonProps) => {
     const SortIcon = sortIcon(sortOrder);
     return (
-        <div className="flex items-center">
-            {label}
-            {onToggleSorting && (
-                <Button variant="ghost" size="icon" onClick={onToggleSorting}>
-                    <SortIcon className="h-2 w-2" />
-                </Button>
-            )}
-            {onFilter && children && (
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={() => onFilter(column.id)}>
-                            <FilterIcon className="h-2 w-2" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                        {children}
-                    </PopoverContent>
-                </Popover>
-            )}
-        </div>
+        <Popover>
+            <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+                {label}
+                {onToggleSorting && (
+                    <Button variant="ghost" size="icon" onClick={onToggleSorting}>
+                        <SortIcon className="h-2 w-2" />
+                    </Button>
+                )}
+                {onFilter && children && (
+                    <>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <FilterIcon className="h-2 w-2" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            {children}
+                        </PopoverContent>
+                    </>
+                )}
+            </div>
+
+        </Popover>
     )
 }

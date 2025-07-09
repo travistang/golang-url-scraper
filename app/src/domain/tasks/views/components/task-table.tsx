@@ -75,7 +75,7 @@ export function TaskTable({
     return (
 
         <div className="w-full">
-            <div className="flex flex-col lg:flex-row justify-between py-4 gap-2">
+            <div className="flex flex-col justify-between py-4 gap-2">
                 <SearchBar
                     onSearch={(search) => setSearchParams(prev => ({ ...prev, search }))}
                 />
