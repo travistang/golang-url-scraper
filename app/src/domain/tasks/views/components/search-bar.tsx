@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { useDebounce } from "@/domain/common/hooks/use-debounce";
 import { useEffect, useState } from "react";
 
 type Props = {
@@ -7,11 +6,13 @@ type Props = {
 }
 export const SearchBar = ({ onSearch }: Props) => {
     const [search, setSearch] = useState("");
-    const debouncedSearch = useDebounce(search, 500);
 
     useEffect(() => {
-        onSearch(debouncedSearch);
-    }, [debouncedSearch, onSearch]);
+        const timeout = setTimeout(() => {
+            onSearch(search);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [search, onSearch]);
 
     return (
         <Input
