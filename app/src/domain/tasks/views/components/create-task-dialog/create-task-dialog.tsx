@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { routes } from "@/constants/routes";
+import { TEST_IDS } from "@/constants/test-ids";
 import axios from "axios";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
@@ -43,7 +44,7 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>
+                <Button data-testid={TEST_IDS.CREATE_TASK_BUTTON}>
                     <PlusIcon className="w-4 h-4" />
                     Add Task
                 </Button>
@@ -57,11 +58,13 @@ export const CreateTaskDialog = ({ onCreate }: Props) => {
                 </DialogDescription>
                 <form onSubmit={handleCreate} className="flex flex-col items-end gap-2">
                     <Input
+                        data-testid={TEST_IDS.CREATE_TASK_URL_INPUT}
                         placeholder="URL to scrape"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                     />
                     <Button
+                        data-testid={TEST_IDS.CREATE_TASK_CREATE_BUTTON}
                         type="submit"
                         disabled={isMutating}
                     >

@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { TEST_IDS } from "@/constants/test-ids";
 import { useEffect, useState } from "react";
 
 type Props = {
@@ -16,6 +17,7 @@ export const SearchBar = ({ onSearch }: Props) => {
 
     return (
         <Input
+            data-testid={TEST_IDS.SEARCH_BAR_INPUT}
             placeholder="Search for tasks"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
