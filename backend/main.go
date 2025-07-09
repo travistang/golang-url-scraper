@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"backend/auth"
 	"backend/url_scraper"
 	"backend/url_scraper/crawler"
 	"backend/url_scraper/repositories"
@@ -32,8 +33,10 @@ func main() {
 	router.Use(cors.Default())
 
 	router.GET("/health", Healthcheck)
+	router.POST("/login", auth.Login)
 
 	api := router.Group("/api/v1")
+	api.Use(auth.SimpleAuthMiddleware())
 	taskHandler := url_scraper.NewTaskHandler(db, worker)
 	taskHandler.RegisterRoutes(api)
 
