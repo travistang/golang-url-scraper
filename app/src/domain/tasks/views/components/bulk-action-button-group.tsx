@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { TEST_IDS } from "@/constants/test-ids";
 
 type Props = {
     selectedRowCount: number;
@@ -15,6 +16,7 @@ export const BulkActionButtonGroup = ({ selectedRowCount, totalRowCount, bulkDel
                 {selectedRowCount} of {totalRowCount} row(s) selected
             </div>
             <Button
+                data-testid={TEST_IDS.BULK_DELETE_BUTTON}
                 variant="outline"
                 size="sm"
                 onClick={bulkDelete}
@@ -29,6 +31,7 @@ export const BulkActionButtonGroup = ({ selectedRowCount, totalRowCount, bulkDel
                 Re-run Selected
             </Button>
             <Button
+                data-testid={TEST_IDS.BULK_CLEAR_SELECTION_BUTTON}
                 variant="outline"
                 size="sm"
                 onClick={clearSelection}

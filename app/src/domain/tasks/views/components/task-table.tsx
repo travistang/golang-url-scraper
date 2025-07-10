@@ -19,6 +19,7 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/table"
+import { useCallback } from "react"
 import { useBulkTaskAction } from "../../hooks/use-bulk-task-action"
 import { Task, TaskSearchParams } from "../../types"
 import { BulkActionButtonGroup } from "./bulk-action-button-group"
@@ -49,6 +50,9 @@ export function TaskTable({
         setRowSelection({});
         refetch();
     });
+    const onSearch = useCallback((search: string) => {
+        setSearchParams(prev => ({ ...prev, search, pageIndex: 0 }));
+    }, [setSearchParams]);
 
     const table = useReactTable({
         data: tasks || [],
@@ -77,7 +81,7 @@ export function TaskTable({
         <div className="w-full">
             <div className="flex flex-col justify-between py-4 gap-2">
                 <SearchBar
-                    onSearch={(search) => setSearchParams(prev => ({ ...prev, search }))}
+                    onSearch={onSearch}
                 />
                 <BulkActionButtonGroup
                     selectedRowCount={selectedRowCount}
@@ -115,12 +119,12 @@ export function TaskTable({
                     </TableBody>
                 </Table>
             </div>
-            <Pagination
+            {!isLoading && <Pagination
                 page={searchParams.pageIndex}
                 totalPages={total}
                 onPrevious={() => setSearchParams(prev => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
                 onNext={() => setSearchParams(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
-            />
+            />}
         </div>
     )
 }

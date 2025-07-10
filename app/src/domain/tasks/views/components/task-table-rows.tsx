@@ -29,6 +29,8 @@ export const TaskTableRows = ({ isLoading, rows }: Props) => {
                 <SkeletonRow />
                 <SkeletonRow />
                 <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
             </>
         )
     }
