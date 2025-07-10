@@ -32,7 +32,6 @@ export function LoginForm({
             router.push(routes.pages.taskList)
         },
         onError: () => {
-            console.log("Failed to login");
             toast.error("Invalid credentials")
         }
     })

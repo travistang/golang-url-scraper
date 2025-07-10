@@ -159,7 +159,6 @@ func (h *TaskHandler) StartTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Task ID is required"})
 		return
 	}
-
 	if err := h.taskService.Start(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start requested task"})
 		return
@@ -185,11 +184,6 @@ func (h *TaskHandler) StopTask(c *gin.Context) {
 
 	if err := h.taskService.Stop(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to stop current task"})
-		return
-	}
-
-	if err := h.taskService.Start(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start requested task"})
 		return
 	}
 

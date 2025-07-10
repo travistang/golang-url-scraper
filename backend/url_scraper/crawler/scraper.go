@@ -32,8 +32,10 @@ type ScrapingResult struct {
 * Scraper for fetching information from URL
  */
 type Scraper struct {
-	client    *http.Client
-	interrupt bool
+	client        *http.Client
+	interruptChan chan bool
+	resumeChan    chan bool
+	interrupted   bool
 }
 
 func NewScraper() *Scraper {
@@ -41,11 +43,19 @@ func NewScraper() *Scraper {
 		client: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		interrupt: false,
+		interruptChan: make(chan bool, 1),
+		resumeChan:    make(chan bool, 1),
+		interrupted:   false,
 	}
 }
 
 func (s *Scraper) ScrapeURL(targetURL string) (*ScrapingResult, error) {
+	if s.interrupted {
+		fmt.Println("Scraper is interrupted, waiting for resume")
+		<-s.resumeChan // Wait for resume signal if interrupted
+		fmt.Println("Scraper resumed")
+	}
+
 	resp, err := s.client.Get(targetURL)
 	if err != nil {
 		return nil, err
@@ -143,11 +153,9 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 		return
 	}
 
-	doc.Find("a[href]").Each(func(i int, link *goquery.Selection) {
-		if s.IsInterrupted() {
-			return
-		}
+	links := make([]string, 0)
 
+	doc.Find("a[href]").Each(func(i int, link *goquery.Selection) {
 		href, exists := link.Attr("href")
 		if !exists {
 			return
@@ -169,30 +177,43 @@ func (s *Scraper) analyzeLinks(doc *goquery.Document, baseURL string, result *Sc
 			result.ExternalLinks++
 		}
 
-		if accessible, statusCode := s.linkAccessibility(resolvedURL.String()); !accessible {
-			fmt.Println("Inaccessible link:", resolvedURL.String(), "Status code:", statusCode)
-			addInaccessibleLink(result, resolvedURL.String(), statusCode)
-		}
+		links = append(links, resolvedURL.String())
 	})
+
+	for _, link := range links {
+		select {
+		case <-s.interruptChan:
+			fmt.Println("Interrupted, skipping link analysis")
+			return
+		default:
+			if accessible, statusCode := s.linkAccessibility(link); !accessible {
+				fmt.Println("Inaccessible link:", link, "Status code:", statusCode)
+				addInaccessibleLink(result, link, statusCode)
+			}
+		}
+
+	}
 }
 
 func (s *Scraper) Interrupt() {
-	s.interrupt = true
+	select {
+	case s.interruptChan <- true:
+		s.interrupted = true
+	default:
+		fmt.Println("Scraper is already interrupted")
+	}
 }
 
 func (s *Scraper) Resume() {
-	s.interrupt = false
-}
-
-func (s *Scraper) IsInterrupted() bool {
-	return s.interrupt
+	select {
+	case s.resumeChan <- true:
+		s.interrupted = false
+	default:
+		fmt.Println("Scraper is already resumed")
+	}
 }
 
 func (s *Scraper) linkAccessibility(linkURL string) (bool, int) {
-	if s.IsInterrupted() {
-		return false, 0
-	}
-
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}

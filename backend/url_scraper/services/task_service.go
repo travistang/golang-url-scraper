@@ -49,26 +49,34 @@ func (s *TaskServiceImpl) getCurrentTask() ([]*models.Task, error) {
 }
 
 func (s *TaskServiceImpl) Start(id string) error {
-	if err := s.Stop(); err != nil {
-		return err
+	if s.worker.HasCurrentTask() {
+		s.worker.Interrupt()
+		defer s.worker.Resume()
 	}
-	defer s.worker.Resume()
 
 	task, err := s.taskRepo.GetByID(id)
 	if err != nil {
 		return err
 	}
 	task.ResetResult()
-	now := time.Now().Unix()
-	task.RequestProcessingAt = &now
-	return s.taskRepo.Update(task)
+	zero := int64(0)
+	task.RequestProcessingAt = &zero
+	if err := s.taskRepo.Update(task); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *TaskServiceImpl) Stop() error {
+	if !s.worker.HasCurrentTask() {
+		return nil
+	}
+
 	s.worker.Interrupt()
+	defer s.worker.Resume()
+
 	currentTasks, err := s.getCurrentTask()
 	if err != nil {
-		s.worker.Resume()
 		return err
 	}
 
@@ -77,8 +85,8 @@ func (s *TaskServiceImpl) Stop() error {
 		t.ResetResult()
 		t.RequestProcessingAt = &now
 	}
+
 	if err := s.taskRepo.BulkUpdate(currentTasks); err != nil {
-		s.worker.Resume()
 		return err
 	}
 	return nil

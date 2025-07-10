@@ -54,6 +54,10 @@ func (w *Worker) Interrupt() {
 	w.scraper.Interrupt()
 }
 
+func (w *Worker) HasCurrentTask() bool {
+	return w.currentTask != nil
+}
+
 func (w *Worker) Resume() {
 	w.scraper.Resume()
 }
