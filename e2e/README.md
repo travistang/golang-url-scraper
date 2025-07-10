@@ -21,6 +21,7 @@ npm install
 ```bash
 npm run install-browsers
 ```
+_Note: in some cases you need to run `sudo npx playwright install-deps` to install dependencies for playwrights if you don't have it set up on your device_
 
 ## Running Tests
 
@@ -59,38 +60,6 @@ npm run report
 - `tests/e2e/` - Main test files
   - `auth.spec.ts` - Authentication tests
   - `tasks.spec.ts` - Task management tests
-  - `task-details.spec.ts` - Task details page tests
 - `tests/fixtures/` - Test data and constants
 - `tests/utils/` - Helper functions for common operations
 
-## Configuration
-
-The tests are configured to:
-
-- Start both frontend (port 3000) and backend (port 8080) automatically
-- Run tests in parallel across multiple browsers (Chrome, Firefox, Safari)
-- Capture screenshots and videos on failures
-- Generate HTML reports
-
-## Test Data
-
-Test data is defined in `tests/fixtures/test-data.ts` and includes:
-
-- Test user credentials
-- Sample URLs for testing
-- Expected task statuses
-
-## Writing New Tests
-
-1. Create a new `.spec.ts` file in `tests/e2e/`
-2. Import test helpers from `tests/utils/test-helpers.ts`
-3. Use test data from `tests/fixtures/test-data.ts`
-4. Follow the existing test patterns and naming conventions
-
-## CI/CD Integration
-
-The tests are configured to run in CI environments with:
-
-- Reduced retries and workers
-- Headless mode
-- No reuse of existing servers
