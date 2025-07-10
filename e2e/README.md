@@ -6,8 +6,8 @@ This directory contains end-to-end tests for the URL Scraper application using P
 
 - Node.js 18+ installed
 - Go 1.21+ installed (for backend)
-- Both frontend and backend should be able to run locally
-
+- Both frontend and backend should be running locally (running `docker compose up` should suffice)
+- Make sure that the frontend is accessible at `http://localhost:3000`
 ## Setup
 
 1. Install dependencies:

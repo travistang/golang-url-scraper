@@ -3,19 +3,8 @@ export const testUsers = {
 };
 
 export const testUrls = {
-    valid: 'https://example.com',
+    valid: (suffix: string) => `https://example-${suffix}.com`,
     invalid: 'not-a-url',
     google: 'https://google.com',
     github: 'https://github.com'
 };
-
-export const testTasks = {
-    simple: {
-        url: 'https://example.com',
-        expectedStatus: 'completed'
-    },
-    complex: {
-        url: 'https://github.com',
-        expectedStatus: 'completed'
-    }
-}; 

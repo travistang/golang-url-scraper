@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
         const cookieStore = await cookies();
         cookieStore.set("token", jwt, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
         });
 

@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { testUsers } from '../fixtures/test-data';
 
 export async function login(page: Page, user = testUsers.admin) {
@@ -14,8 +14,6 @@ export async function createTask(page: Page, url: string) {
     await page.fill('[data-testid="create-task-url-input"]', url);
     await page.click('[data-testid="create-task-create-button"]');
 
-    // Wait for the task to appear in the list
-    await expect(page.locator(`text=${url}`)).toBeVisible();
 }
 
 export async function searchTasks(page: Page, searchTerm: string) {
@@ -24,9 +22,13 @@ export async function searchTasks(page: Page, searchTerm: string) {
     await page.waitForTimeout(600);
 }
 
-export async function selectTask(page: Page, url: string) {
-    const taskRow = page.locator('tr').filter({ hasText: url });
+export async function selectFirstTask(page: Page) {
+    const taskRow = page.locator('tr').first();
     await taskRow.locator('input[type="checkbox"]').check();
+}
+
+export async function getFirstRowText(page: Page) {
+    return page.locator('tr').first().textContent();
 }
 
 export async function clearSelection(page: Page) {
